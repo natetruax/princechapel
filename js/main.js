@@ -11,14 +11,14 @@ const ADMIN_EMAILS = [
 ];
 // ============================================================
 
-const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+const supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 let currentUser = null;
 
 // ---- AUTH ----
 async function initAuth() {
-  const { data: { session } } = await supabase.auth.getSession();
+  const { data: { session } } = await supabaseClient.auth.getSession();
   if (session) handleSession(session);
-  supabase.auth.onAuthStateChange((_event, session) => {
+  supabaseClient.auth.onAuthStateChange((_event, session) => {
     if (session) handleSession(session);
     else handleSignOut();
   });
@@ -31,7 +31,7 @@ function handleSession(session) {
     document.getElementById('admin-toggle').style.display = 'flex';
     closeLoginModal();
   } else {
-    supabase.auth.signOut();
+    supabaseClient.auth.signOut();
     showLoginError('Your Google account (' + email + ') is not an approved admin. Please contact the church office.');
   }
 }
@@ -42,7 +42,7 @@ function handleSignOut() {
 }
 
 async function signInWithGoogle() {
-  const { error } = await supabase.auth.signInWithOAuth({
+  const { error } = await supabaseClient.auth.signInWithOAuth({
     provider: 'google',
     options: { redirectTo: window.location.href }
   });
@@ -50,7 +50,7 @@ async function signInWithGoogle() {
 }
 
 async function signOut() {
-  await supabase.auth.signOut();
+  await supabaseClient.auth.signOut();
   closeAdmin();
 }
 
@@ -97,9 +97,9 @@ const store = {
 async function loadFromSupabase() {
   if (SUPABASE_URL === 'YOUR_SUPABASE_URL') return;
   const [eventsRes, staffRes, sermonsRes] = await Promise.all([
-    supabase.from('events').select('*').order('sort_order'),
-    supabase.from('staff').select('*').order('sort_order'),
-    supabase.from('sermons').select('*').order('date', { ascending: false })
+    supabaseClient.from('events').select('*').order('sort_order'),
+    supabaseClient.from('staff').select('*').order('sort_order'),
+    supabaseClient.from('sermons').select('*').order('date', { ascending: false })
   ]);
   if (eventsRes.data && eventsRes.data.length)  store.events  = eventsRes.data;
   if (staffRes.data  && staffRes.data.length)   store.staff   = staffRes.data;
@@ -110,22 +110,22 @@ async function loadFromSupabase() {
 
 async function saveEventsToSupabase() {
   if (SUPABASE_URL === 'YOUR_SUPABASE_URL') { showToast(); return; }
-  await supabase.from('events').delete().neq('id', 0);
-  const { error } = await supabase.from('events').insert(store.events.map((e,i) => ({...e, sort_order:i})));
+  await supabaseClient.from('events').delete().neq('id', 0);
+  const { error } = await supabaseClient.from('events').insert(store.events.map((e,i) => ({...e, sort_order:i})));
   error ? alert('Save failed: ' + error.message) : showToast();
 }
 
 async function saveStaffToSupabase() {
   if (SUPABASE_URL === 'YOUR_SUPABASE_URL') { showToast(); return; }
-  await supabase.from('staff').delete().neq('id', 0);
-  const { error } = await supabase.from('staff').insert(store.staff.map((s,i) => ({...s, sort_order:i})));
+  await supabaseClient.from('staff').delete().neq('id', 0);
+  const { error } = await supabaseClient.from('staff').insert(store.staff.map((s,i) => ({...s, sort_order:i})));
   error ? alert('Save failed: ' + error.message) : showToast();
 }
 
 async function saveSermonsToSupabase() {
   if (SUPABASE_URL === 'YOUR_SUPABASE_URL') { showToast(); return; }
-  await supabase.from('sermons').delete().neq('id', 0);
-  const { error } = await supabase.from('sermons').insert(store.sermons);
+  await supabaseClient.from('sermons').delete().neq('id', 0);
+  const { error } = await supabaseClient.from('sermons').insert(store.sermons);
   error ? alert('Save failed: ' + error.message) : showToast();
 }
 
