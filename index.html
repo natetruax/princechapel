@@ -8,6 +8,7 @@
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;600;700&family=Lato:wght@300;400;700&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="css/style.css">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/quill@1.3.7/dist/quill.snow.css">
 
 </head>
 <body>
@@ -17,13 +18,22 @@
   <a href="#" class="nav-brand">Prince Chapel <span style="opacity:0.5;font-size:0.7em;">by the Sea</span></a>
   <ul class="nav-links">
     <li><a href="#about">About</a></li>
-    <li><a href="#services">Services</a></li>
     <li><a href="#events">Events</a></li>
     <li><a href="#leadership">Leadership</a></li>
     <li><a href="#contact">Contact</a></li>
     <li><a href="#give" class="nav-cta">Give</a></li>
   </ul>
+  <button class="nav-hamburger" onclick="toggleMobileNav()" aria-label="Menu">
+    <span></span><span></span><span></span>
+  </button>
 </nav>
+<div class="nav-mobile-menu" id="nav-mobile-menu">
+  <a href="#about" onclick="closeMobileNav()">About</a>
+  <a href="#events" onclick="closeMobileNav()">Events</a>
+  <a href="#leadership" onclick="closeMobileNav()">Leadership</a>
+  <a href="#contact" onclick="closeMobileNav()">Contact</a>
+  <a href="#give" onclick="closeMobileNav()" class="nav-mobile-cta">Give</a>
+</div>
 
 <!-- HERO -->
 <section class="hero" id="home">
@@ -32,10 +42,6 @@
     <p class="hero-eyebrow">African Methodist Episcopal · La Jolla, CA</p>
     <h1>A Place to Learn,<br><em>Love,</em> and Worship</h1>
     <p class="hero-sub">Since 1921, Prince Chapel by the Sea has been a home for everyone. All are welcome here — every person is someone special.</p>
-    <div class="hero-buttons">
-      <a href="#services" class="btn-primary">Join Us Sunday</a>
-      <a href="#about" class="btn-outline">Our Story</a>
-    </div>
     <div class="founded-badge">Serving La Jolla since 1921</div>
   </div>
 </section>
@@ -74,16 +80,19 @@
     <br>
     <p class="section-body">Whether you're seeking a spiritual home, connection with others, or simply a place of peace — our doors are always open to you.</p>
     <br>
-    <a href="#contact" class="btn-primary" style="display:inline-block;margin-top:0.5rem;">Plan Your Visit</a>
+    <button class="btn-primary" style="margin-top:0.5rem;" onclick="openAboutModal()">Learn More</button>
   </div>
   <div>
     <div class="about-visual">
-      <div class="about-visual-inner">
-        <svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
-          <rect x="42" y="10" width="16" height="80" rx="2"/>
-          <rect x="10" y="35" width="80" height="16" rx="2"/>
-        </svg>
-        <p style="font-family:'Playfair Display',serif;font-size:1rem;margin-top:1rem;color:var(--clay);opacity:0.5;">Add a photo of your church here</p>
+      <div class="about-visual-inner" id="about-photo-box">
+        <div id="about-slideshow" class="about-slideshow"></div>
+        <div class="about-visual-placeholder" id="about-visual-placeholder">
+          <svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
+            <rect x="42" y="10" width="16" height="80" rx="2"/>
+            <rect x="10" y="35" width="80" height="16" rx="2"/>
+          </svg>
+          <p style="font-family:'Playfair Display',serif;font-size:1rem;margin-top:1rem;color:var(--clay);opacity:0.5;">Add photos via the admin panel</p>
+        </div>
       </div>
       <div class="about-stat">
         <div class="num" style="color:var(--gold);">100+</div>
@@ -112,18 +121,19 @@
   <div class="staff-grid" id="staff-display"></div>
 </section>
 
+<!-- SERMONS -->
+<section class="sermons-section" id="sermons">
+  <p class="section-label">The Word</p>
+  <h2 class="section-title">Recent Sermons</h2>
+  <p class="section-body">Catch up on recent messages from our pastor.</p>
+  <div class="sermons-grid" id="sermons-display"></div>
+</section>
+
 <!-- GIVE -->
 <section class="give-section" id="give">
   <p class="section-label">Support Our Ministry</p>
   <h2 class="section-title" style="color:white;">Give to Prince Chapel</h2>
   <p class="section-body">Your generosity makes our ministry possible. Every gift supports our congregation, community outreach, and over 100 years of service.</p>
-  <div class="give-options">
-    <button class="give-amount" onclick="selectAmount(this,'25')">$25</button>
-    <button class="give-amount" onclick="selectAmount(this,'50')">$50</button>
-    <button class="give-amount" onclick="selectAmount(this,'100')">$100</button>
-    <button class="give-amount" onclick="selectAmount(this,'250')">$250</button>
-  </div>
-  <br>
   <a href="https://www.paypal.com/cgi-bin/webscr?cmd=_s-xclick&hosted_button_id=CPMJTRVQTMHCS" class="give-btn" target="_blank">Give Now via PayPal</a>
 </section>
 
@@ -137,14 +147,14 @@
       <div class="contact-icon">📍</div>
       <div>
         <h4>Address</h4>
-        <p id="display-address">Prince Chapel AME<br>La Jolla, CA</p>
+        <p id="display-address">Prince Chapel AME<br>7517 Cuvier St<br> La Jolla, CA 9203</p>
       </div>
     </div>
     <div class="contact-item">
       <div class="contact-icon">📞</div>
       <div>
         <h4>Phone</h4>
-        <a href="tel:+1" id="display-phone">(Add your phone number)</a>
+        <a href="tel:+1" id="display-phone">(858) 459-0271</a>
       </div>
     </div>
     <div class="contact-item">
@@ -163,25 +173,18 @@
     </div>
   </div>
   <div>
-    <a href="https://goo.gl/maps/GKrMF" target="_blank" class="map-placeholder">
-      <span class="map-pin">📍</span>
-      <strong style="color:var(--text-dark);font-family:'Playfair Display',serif;">Get Directions</strong>
-      <p>Click to open in Google Maps</p>
-    </a>
-    <br>
-    <div style="background:var(--cream);border-radius:8px;padding:1.5rem;border:1px solid var(--border);">
-      <h3 style="font-family:'Playfair Display',serif;font-size:1.1rem;margin-bottom:1rem;">Send a Message</h3>
-      <div class="form-group"><input type="text" placeholder="Your name"></div>
-      <div class="form-group"><input type="email" placeholder="Email address"></div>
-      <div class="form-group"><textarea placeholder="How can we help?"></textarea></div>
-      <button class="admin-save-btn" style="width:100%;">Send Message</button>
-    </div>
+    <iframe
+      src="https://maps.google.com/maps?q=Prince+Chapel+AME+La+Jolla+CA&output=embed"
+      width="100%" height="360" style="border:0;border-radius:8px;display:block;"
+      allowfullscreen loading="lazy" referrerpolicy="no-referrer-when-downgrade">
+    </iframe>
+    <a href="https://goo.gl/maps/GKrMF" target="_blank" style="display:inline-block;margin-top:0.75rem;font-size:0.85rem;color:var(--clay);text-decoration:none;font-weight:700;">&#x2197; Get Directions</a>
   </div>
 </section>
 
 <!-- FOOTER -->
 <footer>
-  <div class="footer-brand">
+  <div class="footer-brand" id="footer-brand-tap">
     Prince Chapel by the Sea
     <span>African Methodist Episcopal · Est. 1921</span>
   </div>
@@ -232,6 +235,8 @@
       <div class="admin-tab" onclick="switchTab('events')">Events</div>
       <div class="admin-tab" onclick="switchTab('staff')">Leadership</div>
       <div class="admin-tab" onclick="switchTab('sermons')">Sermons</div>
+      <div class="admin-tab" onclick="switchTab('about')">About</div>
+      <div class="admin-tab" onclick="switchTab('photos')">Photos</div>
     </div>
     <div class="admin-body">
 
@@ -309,6 +314,82 @@ La Jolla, CA</textarea>
         <button class="admin-save-btn" onclick="saveSermons()">Save Sermons</button>
       </div>
 
+      <!-- ABOUT TAB -->
+      <div class="tab-pane" id="tab-about">
+        <p style="font-size:0.88rem;color:var(--text-light);margin-bottom:1.25rem;">Edit the content shown in the "Learn More" popup on the homepage.</p>
+        <div class="form-group">
+          <label>Our Name</label>
+          <div id="admin-about-name-editor" class="rich-editor"></div>
+        </div>
+        <div class="form-group">
+          <label>Our Vision</label>
+          <div id="admin-about-vision-editor" class="rich-editor"></div>
+        </div>
+        <div class="form-group">
+          <label>Our Mission Statement</label>
+          <div id="admin-about-mission-editor" class="rich-editor"></div>
+        </div>
+        <div class="form-group">
+          <label>Our Motto</label>
+          <div id="admin-about-motto-editor" class="rich-editor"></div>
+        </div>
+        <button class="admin-save-btn" onclick="saveAbout()">Save About</button>
+      </div>
+
+      <!-- PHOTOS TAB -->
+      <div class="tab-pane" id="tab-photos">
+        <p style="font-size:0.88rem;color:var(--text-light);margin-bottom:1.25rem;">Manage the slideshow photos shown on the homepage hero. Photos cycle automatically every 5 seconds.</p>
+        <div id="photos-admin-list"></div>
+        <button class="add-entry-btn" onclick="addHeroPhoto()">+ Add Photo</button>
+        <br><br>
+        <button class="admin-save-btn" onclick="saveHeroPhotos()">Save Photos</button>
+      </div>
+
+    </div>
+  </div>
+</div>
+
+<!-- ABOUT MODAL -->
+<div id="about-modal" style="display:none;" onclick="if(event.target===this)closeAboutModal()">
+  <div class="about-modal-box">
+    <button class="staff-modal-close" onclick="closeAboutModal()">&#x2715;</button>
+    <div class="about-modal-header">
+      <p class="section-label" style="color:var(--gold);">Prince Chapel AME</p>
+      <h2 class="about-modal-title">Who We Are</h2>
+    </div>
+    <div class="about-modal-body">
+      <div class="about-modal-section">
+        <h3>Our Name</h3>
+        <p id="about-name">Prince Chapel African Methodist Episcopal Church by the Sea — a congregation rooted in over 100 years of faith, service, and community in La Jolla, California.</p>
+      </div>
+      <div class="about-modal-section">
+        <h3>Our Vision</h3>
+        <p id="about-vision">Edit this in the admin panel.</p>
+      </div>
+      <div class="about-modal-section">
+        <h3>Our Mission Statement</h3>
+        <p id="about-mission">Edit this in the admin panel.</p>
+      </div>
+      <div class="about-modal-section">
+        <h3>Our Motto</h3>
+        <p id="about-motto">Edit this in the admin panel.</p>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- STAFF MODAL -->
+<div id="staff-modal" style="display:none;" onclick="if(event.target===this)closeStaffModal()">
+  <div class="staff-modal-box">
+    <button class="staff-modal-close" onclick="closeStaffModal()">&#x2715;</button>
+    <div class="staff-modal-photo-wrap">
+      <img id="staff-modal-photo" src="" alt="">
+      <div id="staff-modal-initials" class="staff-modal-initials"></div>
+    </div>
+    <div class="staff-modal-body">
+      <div id="staff-modal-role" class="staff-modal-role"></div>
+      <h2 id="staff-modal-name" class="staff-modal-name"></h2>
+      <p id="staff-modal-bio" class="staff-modal-bio"></p>
     </div>
   </div>
 </div>
@@ -317,6 +398,7 @@ La Jolla, CA</textarea>
 
 <!-- Supabase SDK -->
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="https://cdn.jsdelivr.net/npm/quill@1.3.7/dist/quill.min.js"></script>
 <script src="js/main.js"></script>
 </body>
 </html>
