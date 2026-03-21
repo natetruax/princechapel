@@ -1,0 +1,322 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Prince Chapel by the Sea AME | La Jolla, CA</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;600;700&family=Lato:wght@300;400;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="css/style.css">
+
+</head>
+<body>
+
+<!-- NAV -->
+<nav>
+  <a href="#" class="nav-brand">Prince Chapel <span style="opacity:0.5;font-size:0.7em;">by the Sea</span></a>
+  <ul class="nav-links">
+    <li><a href="#about">About</a></li>
+    <li><a href="#services">Services</a></li>
+    <li><a href="#events">Events</a></li>
+    <li><a href="#leadership">Leadership</a></li>
+    <li><a href="#contact">Contact</a></li>
+    <li><a href="#give" class="nav-cta">Give</a></li>
+  </ul>
+</nav>
+
+<!-- HERO -->
+<section class="hero" id="home">
+  <div class="hero-pattern"></div>
+  <div class="hero-content">
+    <p class="hero-eyebrow">African Methodist Episcopal · La Jolla, CA</p>
+    <h1>A Place to Learn,<br><em>Love,</em> and Worship</h1>
+    <p class="hero-sub">Since 1921, Prince Chapel by the Sea has been a home for everyone. All are welcome here — every person is someone special.</p>
+    <div class="hero-buttons">
+      <a href="#services" class="btn-primary">Join Us Sunday</a>
+      <a href="#about" class="btn-outline">Our Story</a>
+    </div>
+    <div class="founded-badge">Serving La Jolla since 1921</div>
+  </div>
+</section>
+
+<!-- SERVICES STRIP -->
+<div class="services-strip" id="services">
+  <div class="service-item">
+    <div class="s-label">Watch Live Online</div>
+    <div class="s-name">YouTube Livestream</div>
+    <a href="https://www.youtube.com/@princechapelbytheseaamechu4598/streams" target="_blank" class="s-yt-btn">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor" style="flex-shrink:0"><path d="M23.498 6.186a3.016 3.016 0 00-2.122-2.136C19.505 3.545 12 3.545 12 3.545s-7.505 0-9.377.505A3.017 3.017 0 00.502 6.186C0 8.07 0 12 0 12s0 3.93.502 5.814a3.016 3.016 0 002.122 2.136c1.871.505 9.376.505 9.376.505s7.505 0 9.377-.505a3.015 3.015 0 002.122-2.136C24 15.93 24 12 24 12s0-3.93-.502-5.814zM9.545 15.568V8.432L15.818 12l-6.273 3.568z"/></svg>
+      Watch Sundays
+    </a>
+  </div>
+  <div class="service-divider"></div>
+  <div class="service-item">
+    <div class="s-label">Sunday Morning</div>
+    <div class="s-name" id="display-service-2-name">Worship Service</div>
+    <div class="s-time" id="display-service-2-time">9:00 AM</div>
+  </div>
+  <div class="service-divider"></div>
+  <div class="service-item">
+    <div class="s-label">Location</div>
+    <div class="s-name">La Jolla, CA</div>
+    <div class="s-time">In-person & online</div>
+  </div>
+</div>
+
+<!-- ABOUT -->
+<section class="about-section" id="about">
+  <div>
+    <p class="section-label">Our Story</p>
+    <h2 class="section-title">More Than a Church — A Family Since 1921</h2>
+    <blockquote class="about-quote">"Everyone is someone, and everyone is someone special."</blockquote>
+    <p class="section-body">For over a century, Prince Chapel by the Sea has been a cornerstone of the La Jolla community. Rooted in the African Methodist Episcopal tradition, we are a welcoming congregation dedicated to faith, fellowship, and service to all.</p>
+    <br>
+    <p class="section-body">Whether you're seeking a spiritual home, connection with others, or simply a place of peace — our doors are always open to you.</p>
+    <br>
+    <a href="#contact" class="btn-primary" style="display:inline-block;margin-top:0.5rem;">Plan Your Visit</a>
+  </div>
+  <div>
+    <div class="about-visual">
+      <div class="about-visual-inner">
+        <svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
+          <rect x="42" y="10" width="16" height="80" rx="2"/>
+          <rect x="10" y="35" width="80" height="16" rx="2"/>
+        </svg>
+        <p style="font-family:'Playfair Display',serif;font-size:1rem;margin-top:1rem;color:var(--clay);opacity:0.5;">Add a photo of your church here</p>
+      </div>
+      <div class="about-stat">
+        <div class="num" style="color:var(--gold);">100+</div>
+        <div class="lbl">Years of Community</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- EVENTS -->
+<section class="events-section" id="events">
+  <div class="events-header">
+    <div>
+      <p class="section-label">What's Happening</p>
+      <h2 class="section-title">Events &amp; Announcements</h2>
+    </div>
+  </div>
+  <div class="events-grid" id="events-display"></div>
+</section>
+
+<!-- STAFF -->
+<section class="staff-section" id="leadership">
+  <p class="section-label">Our Leadership</p>
+  <h2 class="section-title">Meet the Team</h2>
+  <p class="section-body">Our dedicated clergy and staff serve with love and purpose, guiding our congregation with wisdom and care.</p>
+  <div class="staff-grid" id="staff-display"></div>
+</section>
+
+<!-- GIVE -->
+<section class="give-section" id="give">
+  <p class="section-label">Support Our Ministry</p>
+  <h2 class="section-title" style="color:white;">Give to Prince Chapel</h2>
+  <p class="section-body">Your generosity makes our ministry possible. Every gift supports our congregation, community outreach, and over 100 years of service.</p>
+  <div class="give-options">
+    <button class="give-amount" onclick="selectAmount(this,'25')">$25</button>
+    <button class="give-amount" onclick="selectAmount(this,'50')">$50</button>
+    <button class="give-amount" onclick="selectAmount(this,'100')">$100</button>
+    <button class="give-amount" onclick="selectAmount(this,'250')">$250</button>
+  </div>
+  <br>
+  <a href="https://www.paypal.com/cgi-bin/webscr?cmd=_s-xclick&hosted_button_id=CPMJTRVQTMHCS" class="give-btn" target="_blank">Give Now via PayPal</a>
+</section>
+
+<!-- CONTACT -->
+<section class="contact-section" id="contact">
+  <div>
+    <p class="section-label">Find Us</p>
+    <h2 class="section-title">Visit Prince Chapel</h2>
+    <br>
+    <div class="contact-item">
+      <div class="contact-icon">📍</div>
+      <div>
+        <h4>Address</h4>
+        <p id="display-address">Prince Chapel AME<br>La Jolla, CA</p>
+      </div>
+    </div>
+    <div class="contact-item">
+      <div class="contact-icon">📞</div>
+      <div>
+        <h4>Phone</h4>
+        <a href="tel:+1" id="display-phone">(Add your phone number)</a>
+      </div>
+    </div>
+    <div class="contact-item">
+      <div class="contact-icon">✉️</div>
+      <div>
+        <h4>Email</h4>
+        <a href="/cdn-cgi/l/email-protection#53" id="display-email">(Add your email)</a>
+      </div>
+    </div>
+    <div class="contact-item">
+      <div class="contact-icon">🕐</div>
+      <div>
+        <h4>Office Hours</h4>
+        <p id="display-office-hours">By appointment</p>
+      </div>
+    </div>
+  </div>
+  <div>
+    <a href="https://goo.gl/maps/GKrMF" target="_blank" class="map-placeholder">
+      <span class="map-pin">📍</span>
+      <strong style="color:var(--text-dark);font-family:'Playfair Display',serif;">Get Directions</strong>
+      <p>Click to open in Google Maps</p>
+    </a>
+    <br>
+    <div style="background:var(--cream);border-radius:8px;padding:1.5rem;border:1px solid var(--border);">
+      <h3 style="font-family:'Playfair Display',serif;font-size:1.1rem;margin-bottom:1rem;">Send a Message</h3>
+      <div class="form-group"><input type="text" placeholder="Your name"></div>
+      <div class="form-group"><input type="email" placeholder="Email address"></div>
+      <div class="form-group"><textarea placeholder="How can we help?"></textarea></div>
+      <button class="admin-save-btn" style="width:100%;">Send Message</button>
+    </div>
+  </div>
+</section>
+
+<!-- FOOTER -->
+<footer>
+  <div class="footer-brand">
+    Prince Chapel by the Sea
+    <span>African Methodist Episcopal · Est. 1921</span>
+  </div>
+  <ul class="footer-links">
+    <li><a href="#about">About</a></li>
+    <li><a href="#events">Events</a></li>
+    <li><a href="#give">Give</a></li>
+    <li><a href="#contact">Contact</a></li>
+  </ul>
+  <p class="footer-copy">© 2025 Prince Chapel by the Sea AME Church, La Jolla, CA. All rights reserved.</p>
+</footer>
+
+<!-- ADMIN TOGGLE — hidden until Google auth confirms admin -->
+<button id="admin-toggle" onclick="openAdmin()" style="display:none;">
+  <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor"><path d="M12 15a3 3 0 100-6 3 3 0 000 6z"/><path fill-rule="evenodd" d="M1.323 11.447C2.811 6.976 7.028 3.75 12.001 3.75c4.97 0 9.185 3.223 10.675 7.69.12.362.12.752 0 1.113-1.487 4.471-5.705 7.697-10.677 7.697-4.97 0-9.186-3.223-10.675-7.69a1.762 1.762 0 010-1.113zM17.25 12a5.25 5.25 0 11-10.5 0 5.25 5.25 0 0110.5 0z" clip-rule="evenodd"/></svg>
+  Admin Panel
+</button>
+
+<!-- GOOGLE LOGIN MODAL -->
+<div id="login-modal" style="display:none;position:fixed;inset:0;z-index:1001;background:rgba(13,46,63,0.7);backdrop-filter:blur(4px);align-items:center;justify-content:center;">
+  <div style="background:white;border-radius:12px;padding:2.5rem;width:100%;max-width:380px;text-align:center;box-shadow:0 24px 80px rgba(0,0,0,0.4);">
+    <div style="width:56px;height:56px;background:var(--sand);border-radius:50%;display:flex;align-items:center;justify-content:center;margin:0 auto 1.25rem;">
+      <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="var(--clay)" stroke-width="2"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0110 0v4"/></svg>
+    </div>
+    <h2 style="font-family:'Playfair Display',serif;font-size:1.3rem;color:var(--text-dark);margin-bottom:0.5rem;">Admin Login</h2>
+    <p style="font-size:0.88rem;color:var(--text-light);margin-bottom:1.75rem;line-height:1.6;">Sign in with your Google account. Only approved church admins can access the panel.</p>
+    <button onclick="signInWithGoogle()" style="width:100%;display:flex;align-items:center;justify-content:center;gap:10px;background:white;border:1.5px solid #dadce0;border-radius:6px;padding:12px 20px;font-family:'Lato',sans-serif;font-size:0.9rem;font-weight:700;color:#3c4043;cursor:pointer;transition:background 0.15s;">
+      <svg width="18" height="18" viewBox="0 0 48 48"><path fill="#EA4335" d="M24 9.5c3.54 0 6.71 1.22 9.21 3.6l6.85-6.85C35.9 2.38 30.47 0 24 0 14.62 0 6.51 5.38 2.56 13.22l7.98 6.19C12.43 13.08 17.74 9.5 24 9.5z"/><path fill="#4285F4" d="M46.98 24.55c0-1.57-.15-3.09-.38-4.55H24v9.02h12.94c-.58 2.96-2.26 5.48-4.78 7.18l7.73 6c4.51-4.18 7.09-10.36 7.09-17.65z"/><path fill="#FBBC05" d="M10.53 28.59c-.48-1.45-.76-2.99-.76-4.59s.27-3.14.76-4.59l-7.98-6.19C.92 16.46 0 20.12 0 24c0 3.88.92 7.54 2.56 10.78l7.97-6.19z"/><path fill="#34A853" d="M24 48c6.48 0 11.93-2.13 15.89-5.81l-7.73-6c-2.18 1.48-4.97 2.31-8.16 2.31-6.26 0-11.57-3.59-13.46-8.91l-7.98 6.19C6.51 42.62 14.62 48 24 48z"/></svg>
+      Sign in with Google
+    </button>
+    <button onclick="closeLoginModal()" style="margin-top:1rem;background:none;border:none;font-size:0.82rem;color:var(--text-light);cursor:pointer;font-family:'Lato',sans-serif;">Cancel</button>
+    <div id="login-error" style="display:none;margin-top:1rem;padding:10px 14px;background:#fff0f0;border-radius:6px;font-size:0.82rem;color:#c0392b;"></div>
+  </div>
+</div>
+
+<!-- ADMIN PANEL -->
+<div id="admin-panel">
+  <div class="admin-modal">
+    <div class="admin-header">
+      <div>
+        <h2>Prince Chapel — Admin Panel</h2>
+        <p>Edit content without touching the code</p>
+      </div>
+      <button class="admin-close" onclick="closeAdmin()">✕</button>
+    </div>
+    <div class="admin-tabs">
+      <div class="admin-tab active" onclick="switchTab('services')">Service Times</div>
+      <div class="admin-tab" onclick="switchTab('events')">Events</div>
+      <div class="admin-tab" onclick="switchTab('staff')">Leadership</div>
+      <div class="admin-tab" onclick="switchTab('sermons')">Sermons</div>
+    </div>
+    <div class="admin-body">
+
+      <!-- SERVICE TIMES TAB -->
+      <div class="tab-pane active" id="tab-services">
+        <p style="font-size:0.88rem;color:var(--text-light);margin-bottom:1.5rem;">Update service times shown on the website.</p>
+        <div class="form-row">
+          <div class="form-group">
+            <label>Service 1 — Name</label>
+            <input type="text" id="svc1-name" value="Church School">
+          </div>
+          <div class="form-group">
+            <label>Service 1 — Time</label>
+            <input type="text" id="svc1-time" value="8:00 AM">
+          </div>
+        </div>
+        <div class="form-row">
+          <div class="form-group">
+            <label>Service 2 — Name</label>
+            <input type="text" id="svc2-name" value="Worship Service">
+          </div>
+          <div class="form-group">
+            <label>Service 2 — Time</label>
+            <input type="text" id="svc2-time" value="9:00 AM">
+          </div>
+        </div>
+        <hr style="border:none;border-top:1px solid var(--border);margin:1.5rem 0;">
+        <p style="font-size:0.82rem;font-weight:700;letter-spacing:0.08em;text-transform:uppercase;color:var(--text-mid);margin-bottom:1rem;">Contact Info</p>
+        <div class="form-group">
+          <label>Church Address</label>
+          <textarea id="admin-address" rows="2">Prince Chapel AME
+La Jolla, CA</textarea>
+        </div>
+        <div class="form-row">
+          <div class="form-group">
+            <label>Phone Number</label>
+            <input type="text" id="admin-phone" placeholder="(619) 555-0100">
+          </div>
+          <div class="form-group">
+            <label>Email Address</label>
+            <input type="text" id="admin-email" placeholder="info@princechapelame.org">
+          </div>
+        </div>
+        <div class="form-group">
+          <label>Office Hours</label>
+          <input type="text" id="admin-office" value="By appointment">
+        </div>
+        <button class="admin-save-btn" onclick="saveServices()">Save Changes</button>
+      </div>
+
+      <!-- EVENTS TAB -->
+      <div class="tab-pane" id="tab-events">
+        <p style="font-size:0.88rem;color:var(--text-light);margin-bottom:1.25rem;">Add, edit, or remove events. They will appear on the main page.</p>
+        <div id="events-admin-list"></div>
+        <button class="add-entry-btn" onclick="addEventEntry()">+ Add Event</button>
+        <br><br>
+        <button class="admin-save-btn" onclick="saveEvents()">Save Events</button>
+      </div>
+
+      <!-- STAFF TAB -->
+      <div class="tab-pane" id="tab-staff">
+        <p style="font-size:0.88rem;color:var(--text-light);margin-bottom:1.25rem;">Manage leadership profiles shown on the website.</p>
+        <div id="staff-admin-list"></div>
+        <button class="add-entry-btn" onclick="addStaffEntry()">+ Add Member</button>
+        <br><br>
+        <button class="admin-save-btn" onclick="saveStaff()">Save Leadership</button>
+      </div>
+
+      <!-- SERMONS TAB -->
+      <div class="tab-pane" id="tab-sermons">
+        <p style="font-size:0.88rem;color:var(--text-light);margin-bottom:1.25rem;">Add recent sermon links (YouTube, podcast, etc.).</p>
+        <div id="sermons-admin-list"></div>
+        <button class="add-entry-btn" onclick="addSermonEntry()">+ Add Sermon</button>
+        <br><br>
+        <button class="admin-save-btn" onclick="saveSermons()">Save Sermons</button>
+      </div>
+
+    </div>
+  </div>
+</div>
+
+<div class="save-toast" id="toast">Changes saved!</div>
+
+<!-- Supabase SDK -->
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="js/main.js"></script>
+</body>
+</html>
