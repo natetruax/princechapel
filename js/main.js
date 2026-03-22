@@ -394,7 +394,7 @@ function renderAdminStaff() {
       <div class="form-group"><label>Short Bio</label><div id="staff-bio-editor-${i}" class="rich-editor"></div></div>
     </div>`).join('');
   store.staff.forEach((s, i) => {
-    const q = new Quill(`#staff-bio-editor-${i}`, { theme: 'snow', modules: { toolbar: richToolbar } });
+    const q = new Quill(`#staff-bio-editor-${i}`, { theme: 'snow', formats: richFormats, modules: { toolbar: richToolbar } });
     q.root.innerHTML = s.bio || '';
     q.on('text-change', () => { store.staff[i].bio = q.root.innerHTML; });
     staffBioEditors[i] = q;
@@ -626,13 +626,14 @@ document.getElementById('login-modal').addEventListener('click', function(e) { i
 
 // ---- RICH TEXT EDITORS ----
 const richToolbar = [['bold', 'italic', 'underline'], [{ list: 'ordered' }, { list: 'bullet' }], ['clean']];
+const richFormats = ['bold', 'italic', 'underline', 'list'];
 let quillAboutName, quillAboutVision, quillAboutMission, quillAboutMotto;
 
 function initAboutEditors() {
-  quillAboutName    = new Quill('#admin-about-name-editor',    { theme: 'snow', modules: { toolbar: richToolbar } });
-  quillAboutVision  = new Quill('#admin-about-vision-editor',  { theme: 'snow', modules: { toolbar: richToolbar } });
-  quillAboutMission = new Quill('#admin-about-mission-editor', { theme: 'snow', modules: { toolbar: richToolbar } });
-  quillAboutMotto   = new Quill('#admin-about-motto-editor',   { theme: 'snow', modules: { toolbar: richToolbar } });
+  quillAboutName    = new Quill('#admin-about-name-editor',    { theme: 'snow', formats: richFormats, modules: { toolbar: richToolbar } });
+  quillAboutVision  = new Quill('#admin-about-vision-editor',  { theme: 'snow', formats: richFormats, modules: { toolbar: richToolbar } });
+  quillAboutMission = new Quill('#admin-about-mission-editor', { theme: 'snow', formats: richFormats, modules: { toolbar: richToolbar } });
+  quillAboutMotto   = new Quill('#admin-about-motto-editor',   { theme: 'snow', formats: richFormats, modules: { toolbar: richToolbar } });
 }
 
 // ---- GALLERY ----

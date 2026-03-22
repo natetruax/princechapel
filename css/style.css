@@ -852,7 +852,10 @@
     border-radius: 14px;
     max-width: 480px;
     width: 100%;
+    max-height: calc(100vh - 2rem);
     overflow: hidden;
+    display: flex;
+    flex-direction: column;
     position: relative;
     animation: modalIn 0.2s ease;
   }
@@ -885,6 +888,8 @@
 
   .staff-modal-photo-wrap {
     height: 260px;
+    min-height: 160px;
+    flex-shrink: 0;
     background: #1B4F6E;
     display: flex;
     align-items: center;
@@ -911,6 +916,9 @@
 
   .staff-modal-body {
     padding: 1.5rem 1.75rem 2rem;
+    overflow-y: auto;
+    flex: 1 1 auto;
+    -webkit-overflow-scrolling: touch;
   }
 
   .staff-modal-role {
@@ -933,6 +941,20 @@
     font-size: 0.92rem;
     color: rgba(180,220,240,0.75);
     line-height: 1.7;
+  }
+
+  .staff-modal-bio * {
+    color: inherit !important;
+    background-color: transparent !important;
+    font-family: inherit !important;
+    font-size: inherit !important;
+  }
+
+  @media (max-height: 600px) {
+    .staff-modal-photo-wrap {
+      height: 160px;
+      min-height: 120px;
+    }
   }
 
   .staff-info {
