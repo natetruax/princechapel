@@ -20,6 +20,7 @@
     <li><a href="#about">About</a></li>
     <li><a href="#events">Events</a></li>
     <li><a href="#leadership">Leadership</a></li>
+    <li><a href="#" onclick="openGalleryModal();return false;">Photos</a></li>
     <li><a href="#contact">Contact</a></li>
     <li><a href="#give" class="nav-cta">Give</a></li>
   </ul>
@@ -31,6 +32,7 @@
   <a href="#about" onclick="closeMobileNav()">About</a>
   <a href="#events" onclick="closeMobileNav()">Events</a>
   <a href="#leadership" onclick="closeMobileNav()">Leadership</a>
+  <a href="#" onclick="closeMobileNav();openGalleryModal();return false;">Photos</a>
   <a href="#contact" onclick="closeMobileNav()">Contact</a>
   <a href="#give" onclick="closeMobileNav()" class="nav-mobile-cta">Give</a>
 </div>
@@ -67,6 +69,10 @@
     <div class="s-label">Location</div>
     <div class="s-name">La Jolla, CA</div>
     <div class="s-time">In-person & online</div>
+    <a href="#contact" class="s-visit-btn">
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor" style="flex-shrink:0"><path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7zm0 9.5c-1.38 0-2.5-1.12-2.5-2.5s1.12-2.5 2.5-2.5 2.5 1.12 2.5 2.5-1.12 2.5-2.5 2.5z"/></svg>
+      Visit Us
+    </a>
   </div>
 </div>
 
@@ -111,6 +117,12 @@
     </div>
   </div>
   <div class="events-grid" id="events-display"></div>
+  <div style="text-align:center;margin-top:2.5rem;">
+    <button class="cal-btn" onclick="openCalendarModal()">
+      <svg width="15" height="15" viewBox="0 0 24 24" fill="currentColor" style="flex-shrink:0"><path d="M19 3h-1V1h-2v2H8V1H6v2H5a2 2 0 00-2 2v14a2 2 0 002 2h14a2 2 0 002-2V5a2 2 0 00-2-2zm0 16H5V9h14v10zm0-12H5V5h14v2z"/></svg>
+      See Full Calendar
+    </button>
+  </div>
 </section>
 
 <!-- STAFF -->
@@ -237,6 +249,7 @@
       <div class="admin-tab" onclick="switchTab('sermons')">Sermons</div>
       <div class="admin-tab" onclick="switchTab('about')">About</div>
       <div class="admin-tab" onclick="switchTab('photos')">Photos</div>
+      <div class="admin-tab" onclick="switchTab('gallery')">Gallery</div>
     </div>
     <div class="admin-body">
 
@@ -245,21 +258,11 @@
         <p style="font-size:0.88rem;color:var(--text-light);margin-bottom:1.5rem;">Update service times shown on the website.</p>
         <div class="form-row">
           <div class="form-group">
-            <label>Service 1 — Name</label>
-            <input type="text" id="svc1-name" value="Church School">
-          </div>
-          <div class="form-group">
-            <label>Service 1 — Time</label>
-            <input type="text" id="svc1-time" value="8:00 AM">
-          </div>
-        </div>
-        <div class="form-row">
-          <div class="form-group">
-            <label>Service 2 — Name</label>
+            <label>Service Name</label>
             <input type="text" id="svc2-name" value="Worship Service">
           </div>
           <div class="form-group">
-            <label>Service 2 — Time</label>
+            <label>Service Time</label>
             <input type="text" id="svc2-time" value="9:00 AM">
           </div>
         </div>
@@ -290,6 +293,11 @@ La Jolla, CA</textarea>
       <!-- EVENTS TAB -->
       <div class="tab-pane" id="tab-events">
         <p style="font-size:0.88rem;color:var(--text-light);margin-bottom:1.25rem;">Add, edit, or remove events. They will appear on the main page.</p>
+        <div class="form-group" style="margin-bottom:1.5rem;">
+          <label>Google Calendar Embed URL</label>
+          <input type="text" id="admin-cal-url" placeholder="Paste your Google Calendar embed src URL here" oninput="store.calendarUrl=this.value">
+          <p style="font-size:0.78rem;color:var(--text-light);margin-top:0.4rem;">In Google Calendar → Settings → your calendar → "Integrate calendar" → copy the <em>Embed code</em> src URL.</p>
+        </div>
         <div id="events-admin-list"></div>
         <button class="add-entry-btn" onclick="addEventEntry()">+ Add Event</button>
         <br><br>
@@ -345,6 +353,64 @@ La Jolla, CA</textarea>
         <button class="admin-save-btn" onclick="saveHeroPhotos()">Save Photos</button>
       </div>
 
+      <!-- GALLERY TAB -->
+      <div class="tab-pane" id="tab-gallery">
+        <p style="font-size:0.88rem;color:var(--text-light);margin-bottom:1.25rem;">Manage the photo gallery accessible from the navigation. Photos are stored in Supabase.</p>
+        <div id="gallery-admin-list"></div>
+        <button class="add-entry-btn" onclick="addGalleryPhoto()">+ Add Photo</button>
+        <br><br>
+        <button class="admin-save-btn" onclick="saveGallery()">Save Gallery</button>
+      </div>
+
+    </div>
+  </div>
+</div>
+
+<!-- GALLERY MODAL -->
+<div id="gallery-modal" style="display:none;" onclick="if(event.target===this)closeGalleryModal()">
+  <div class="gallery-modal-box">
+    <div class="gallery-modal-header">
+      <div>
+        <p class="section-label" style="color:var(--gold);">Prince Chapel AME</p>
+        <h2 class="about-modal-title">Photo Gallery</h2>
+      </div>
+      <button class="staff-modal-close" onclick="closeGalleryModal()">&#x2715;</button>
+    </div>
+    <div class="gallery-modal-body">
+      <div class="gallery-grid" id="gallery-grid"></div>
+      <p id="gallery-no-photos" style="text-align:center;color:rgba(210,230,242,0.4);padding:4rem 0;display:none;">No photos yet.</p>
+    </div>
+  </div>
+</div>
+
+<!-- LIGHTBOX -->
+<div id="lightbox" style="display:none;" onclick="if(event.target===this)closeLightbox()">
+  <button class="lightbox-close" onclick="closeLightbox()">&#x2715;</button>
+  <button id="lightbox-prev" class="lightbox-prev" onclick="lightboxNav(-1)">&#8249;</button>
+  <img id="lightbox-img" src="" alt="">
+  <p id="lightbox-caption" class="lightbox-caption"></p>
+  <button id="lightbox-next" class="lightbox-next" onclick="lightboxNav(1)">&#8250;</button>
+</div>
+
+<!-- CALENDAR MODAL -->
+<div id="calendar-modal" style="display:none;" onclick="if(event.target===this)closeCalendarModal()">
+  <div class="cal-modal-box">
+    <div class="cal-modal-header">
+      <div>
+        <p class="section-label" style="color:var(--gold);">Prince Chapel AME</p>
+        <h2 class="about-modal-title">Church Calendar</h2>
+      </div>
+      <div style="display:flex;align-items:center;gap:0.75rem;">
+        <a id="cal-open-link" href="" target="_blank" class="cal-open-link" style="display:none;align-items:center;gap:6px;font-size:0.78rem;font-weight:700;letter-spacing:0.05em;text-transform:uppercase;color:var(--gold);text-decoration:none;white-space:nowrap;">
+          <svg width="13" height="13" viewBox="0 0 24 24" fill="currentColor"><path d="M19 19H5V8h14m-3-7v2H8V1H6v2H5a2 2 0 00-2 2v14a2 2 0 002 2h14a2 2 0 002-2V5a2 2 0 00-2-2h-1V1m-1 11h-5v5h5v-5z"/></svg>
+          Open
+        </a>
+        <button class="staff-modal-close" onclick="closeCalendarModal()">&#x2715;</button>
+      </div>
+    </div>
+    <div class="cal-modal-body">
+      <iframe id="cal-iframe" src="" style="border:0;width:100%;height:100%;border-radius:6px;" frameborder="0" scrolling="yes"></iframe>
+      <p id="cal-no-url" style="display:none;text-align:center;color:rgba(210,230,242,0.5);padding:4rem 0;">No calendar URL set — add it in the admin panel under Events.</p>
     </div>
   </div>
 </div>

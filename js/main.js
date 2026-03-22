@@ -93,16 +93,24 @@ document.getElementById('footer-brand-tap').addEventListener('click', () => {
 // ---- DATA STORE (default sample data — replaced by Supabase once configured) ----
 const store = {
   heroPhotos: [],
+  calendarUrl: '',
   about: {
-    name:    'Prince Chapel African Methodist Episcopal Church by the Sea — a congregation rooted in over 100 years of faith, service, and community in La Jolla, California.',
-    vision:  '',
-    mission: '',
-    motto:   ''
+    name:         'Prince Chapel African Methodist Episcopal Church by the Sea — a congregation rooted in over 100 years of faith, service, and community in La Jolla, California.',
+    vision:       '',
+    mission:      '',
+    motto:        '',
+    calendar_url: '',
+    service_name: 'Worship Service',
+    service_time: '9:00 AM',
+    address:      'Prince Chapel AME\nLa Jolla, CA',
+    phone:        '',
+    email:        '',
+    office_hours: 'By appointment'
   },
   events: [
-    { month:'APR', day:'6',  title:'Palm Sunday Service',    time:'9:00 AM', desc:'A special service to begin Holy Week together.' },
-    { month:'APR', day:'13', title:'Easter Sunrise Service', time:'6:30 AM', desc:'Celebrate the resurrection with our community.' },
-    { month:'APR', day:'20', title:'Spring Fellowship Dinner',time:'1:00 PM', desc:'Family meal after worship. All are welcome!' }
+    { month:'APR', day:'6',  title:'Palm Sunday Service',    time:'9:00 AM', description:'A special service to begin Holy Week together.' },
+    { month:'APR', day:'13', title:'Easter Sunrise Service', time:'6:30 AM', description:'Celebrate the resurrection with our community.' },
+    { month:'APR', day:'20', title:'Spring Fellowship Dinner',time:'1:00 PM', description:'Family meal after worship. All are welcome!' }
   ],
   staff: [
     { name:'Rev. Dr. Smith',  initials:'RS', role:'Senior Pastor',   bio:'Leading Prince Chapel with faith and dedication.' },
@@ -112,25 +120,32 @@ const store = {
   sermons: [
     { title:'Walking in His Grace',    date:'March 16, 2025', speaker:'Rev. Dr. Smith', url:'' },
     { title:'The Power of Community',  date:'March 9, 2025',  speaker:'Rev. Dr. Smith', url:'' }
-  ]
+  ],
+  galleryPhotos: []
 };
 
 // ---- SUPABASE DATA LOAD & SAVE ----
 // Once your tables are created (see setup guide), these pull live data from Supabase.
 async function loadFromSupabase() {
   if (SUPABASE_URL === 'YOUR_SUPABASE_URL') return;
-  const [eventsRes, staffRes, sermonsRes, aboutRes, photosRes] = await Promise.all([
+  const [eventsRes, staffRes, sermonsRes, aboutRes, photosRes, galleryRes] = await Promise.all([
     supabaseClient.from('events').select('*').order('sort_order'),
     supabaseClient.from('staff').select('*').order('sort_order'),
     supabaseClient.from('sermons').select('*').order('date', { ascending: false }),
     supabaseClient.from('about').select('*').limit(1),
-    supabaseClient.from('hero_photos').select('*').order('sort_order')
+    supabaseClient.from('hero_photos').select('*').order('sort_order'),
+    supabaseClient.from('gallery_photos').select('*').order('sort_order')
   ]);
   if (eventsRes.data && eventsRes.data.length)  store.events     = eventsRes.data;
   if (staffRes.data  && staffRes.data.length)   store.staff      = staffRes.data;
   if (sermonsRes.data && sermonsRes.data.length) store.sermons   = sermonsRes.data;
-  if (aboutRes.data  && aboutRes.data.length)   Object.assign(store.about, aboutRes.data[0]);
-  if (photosRes.data && photosRes.data.length)  store.heroPhotos = photosRes.data;
+  if (aboutRes.data  && aboutRes.data.length) {
+    Object.assign(store.about, aboutRes.data[0]);
+    store.calendarUrl = store.about.calendar_url || '';
+    applyContactToPage();
+  }
+  if (photosRes.data  && photosRes.data.length)  store.heroPhotos    = photosRes.data;
+  if (galleryRes.data && galleryRes.data.length) store.galleryPhotos = galleryRes.data;
   renderEvents();
   renderStaff();
   renderSermons();
@@ -140,21 +155,30 @@ async function loadFromSupabase() {
 async function saveEventsToSupabase() {
   if (SUPABASE_URL === 'YOUR_SUPABASE_URL') { showToast(); return; }
   await supabaseClient.from('events').delete().neq('id', 0);
-  const { error } = await supabaseClient.from('events').insert(store.events.map((e,i) => ({...e, sort_order:i})));
-  error ? alert('Save failed: ' + error.message) : showToast();
+  const rows = store.events.map((e,i) => { const {id, ...rest} = e; return {...rest, sort_order:i}; });
+  const { error } = rows.length ? await supabaseClient.from('events').insert(rows) : { error: null };
+  if (error) { alert('Save failed: ' + error.message); return; }
+  store.about.calendar_url = store.calendarUrl;
+  const { id: _id, ...aboutData } = store.about;
+  await supabaseClient.from('about').delete().neq('id', 0);
+  const { error: aboutError } = await supabaseClient.from('about').insert([aboutData]);
+  if (aboutError) { alert('Calendar URL save failed: ' + aboutError.message); return; }
+  showToast();
 }
 
 async function saveStaffToSupabase() {
   if (SUPABASE_URL === 'YOUR_SUPABASE_URL') { showToast(); return; }
   await supabaseClient.from('staff').delete().neq('id', 0);
-  const { error } = await supabaseClient.from('staff').insert(store.staff.map((s,i) => ({...s, sort_order:i})));
+  const rows = store.staff.map((s,i) => { const {id, ...rest} = s; return {...rest, sort_order:i}; });
+  const { error } = rows.length ? await supabaseClient.from('staff').insert(rows) : { error: null };
   error ? alert('Save failed: ' + error.message) : showToast();
 }
 
 async function saveSermonsToSupabase() {
   if (SUPABASE_URL === 'YOUR_SUPABASE_URL') { showToast(); return; }
   await supabaseClient.from('sermons').delete().neq('id', 0);
-  const { error } = await supabaseClient.from('sermons').insert(store.sermons);
+  const rows = store.sermons.map(s => { const {id, ...rest} = s; return rest; });
+  const { error } = rows.length ? await supabaseClient.from('sermons').insert(rows) : { error: null };
   error ? alert('Save failed: ' + error.message) : showToast();
 }
 
@@ -162,11 +186,19 @@ async function saveSermonsToSupabase() {
 function openAdmin() {
   if (!currentUser) { openLoginModal(); return; }
   document.getElementById('admin-panel').classList.add('open');
+  document.getElementById('admin-cal-url').value  = store.calendarUrl || '';
+  document.getElementById('svc2-name').value       = store.about.service_name || '';
+  document.getElementById('svc2-time').value       = store.about.service_time || '';
+  document.getElementById('admin-address').value   = store.about.address      || '';
+  document.getElementById('admin-phone').value     = store.about.phone        || '';
+  document.getElementById('admin-email').value     = store.about.email        || '';
+  document.getElementById('admin-office').value    = store.about.office_hours || '';
   renderAdminEvents();
   renderAdminStaff();
   renderAdminSermons();
   renderAdminAbout();
   renderAdminHeroPhotos();
+  renderAdminGallery();
 }
 
 function closeAdmin() {
@@ -188,30 +220,53 @@ function showToast(msg) {
 }
 
 // ---- SERVICES ----
-function saveServices() {
-  document.getElementById('display-service-2-name').textContent = document.getElementById('svc2-name').value;
-  document.getElementById('display-service-2-time').textContent = document.getElementById('svc2-time').value;
-  const addr = document.getElementById('admin-address').value;
-  document.getElementById('display-address').innerHTML = addr.replace(/\n/g,'<br>');
-  const ph = document.getElementById('admin-phone').value;
-  if (ph) { document.getElementById('display-phone').textContent = ph; document.getElementById('display-phone').href = 'tel:'+ph; }
-  const em = document.getElementById('admin-email').value;
-  if (em) { document.getElementById('display-email').textContent = em; document.getElementById('display-email').href = 'mailto:'+em; }
-  document.getElementById('display-office-hours').textContent = document.getElementById('admin-office').value;
-  showToast();
+function applyContactToPage() {
+  const a = store.about;
+  if (a.service_name) document.getElementById('display-service-2-name').textContent = a.service_name;
+  if (a.service_time) document.getElementById('display-service-2-time').textContent = a.service_time;
+  if (a.address)      document.getElementById('display-address').innerHTML = a.address.replace(/\n/g,'<br>');
+  if (a.phone)        { document.getElementById('display-phone').textContent = a.phone; document.getElementById('display-phone').href = 'tel:'+a.phone; }
+  if (a.email)        { document.getElementById('display-email').textContent = a.email; document.getElementById('display-email').href = 'mailto:'+a.email; }
+  if (a.office_hours) document.getElementById('display-office-hours').textContent = a.office_hours;
+}
+
+async function saveServices() {
+  store.about.service_name = document.getElementById('svc2-name').value;
+  store.about.service_time = document.getElementById('svc2-time').value;
+  store.about.address      = document.getElementById('admin-address').value;
+  store.about.phone        = document.getElementById('admin-phone').value;
+  store.about.email        = document.getElementById('admin-email').value;
+  store.about.office_hours = document.getElementById('admin-office').value;
+  applyContactToPage();
+  if (SUPABASE_URL === 'YOUR_SUPABASE_URL') { showToast(); return; }
+  const { id: _id, ...aboutData } = store.about;
+  await supabaseClient.from('about').delete().neq('id', 0);
+  const { error } = await supabaseClient.from('about').insert([aboutData]);
+  error ? alert('Save failed: ' + error.message) : showToast();
 }
 
 // ---- EVENTS ----
+const DAY_ABBR = { monday:'MON', tuesday:'TUE', wednesday:'WED', thursday:'THU', friday:'FRI', saturday:'SAT', sunday:'SUN' };
+function abbrevDay(val) {
+  const key = val.trim().toLowerCase();
+  return DAY_ABBR[key] || val.toUpperCase();
+}
+
 function renderEvents() {
-  document.getElementById('events-display').innerHTML = store.events.map(e => `
+  document.getElementById('events-display').innerHTML = store.events.map(e => {
+    const dateBox = e.recurring
+      ? `<div class="event-date-box recurring"><div class="month">Every</div><div class="day">${abbrevDay(e.recurring)}</div></div>`
+      : `<div class="event-date-box"><div class="month">${e.month}</div><div class="day">${e.day}</div></div>`;
+    return `
     <div class="event-card">
-      <div class="event-date-box"><div class="month">${e.month}</div><div class="day">${e.day}</div></div>
+      ${dateBox}
       <div class="event-info">
         <h3>${e.title}</h3>
         <div class="time">${e.time}</div>
-        <p>${e.desc}</p>
+        <p>${e.description}</p>
       </div>
-    </div>`).join('');
+    </div>`;
+  }).join('');
 }
 
 function renderAdminEvents() {
@@ -222,16 +277,49 @@ function renderAdminEvents() {
         <div class="form-group"><label>Title</label><input type="text" value="${e.title}" onchange="store.events[${i}].title=this.value"></div>
         <div class="form-group"><label>Time</label><input type="text" value="${e.time}" onchange="store.events[${i}].time=this.value"></div>
       </div>
-      <div class="form-row">
+      <div class="form-group">
+        <label>Recurring (e.g. Wednesday, Sunday — leave blank for a one-time event)</label>
+        <input type="text" value="${e.recurring||''}" placeholder="e.g. Wednesday" onchange="store.events[${i}].recurring=this.value;toggleEventDateFields(this,${i})">
+      </div>
+      <div class="form-row event-date-fields" id="event-date-fields-${i}" style="${e.recurring?'opacity:0.35;pointer-events:none;':''}">
         <div class="form-group"><label>Month (e.g. APR)</label><input type="text" value="${e.month}" onchange="store.events[${i}].month=this.value" maxlength="3"></div>
         <div class="form-group"><label>Day</label><input type="text" value="${e.day}" onchange="store.events[${i}].day=this.value" maxlength="2"></div>
       </div>
-      <div class="form-group"><label>Description</label><textarea onchange="store.events[${i}].desc=this.value">${e.desc}</textarea></div>
+      <div class="form-group"><label>Description</label><textarea onchange="store.events[${i}].description=this.value">${e.description}</textarea></div>
     </div>`).join('');
 }
 
-function addEventEntry() { store.events.push({month:'---',day:'1',title:'New Event',time:'10:00 AM',desc:''}); renderAdminEvents(); }
+function addEventEntry() { store.events.push({month:'---',day:'1',title:'New Event',time:'10:00 AM',description:'',recurring:''}); renderAdminEvents(); }
+function toggleEventDateFields(input, i) {
+  const row = document.getElementById('event-date-fields-'+i);
+  if (input.value.trim()) { row.style.opacity='0.35'; row.style.pointerEvents='none'; }
+  else { row.style.opacity=''; row.style.pointerEvents=''; }
+}
 function removeEvent(i)   { store.events.splice(i,1); renderAdminEvents(); }
+
+function openCalendarModal() {
+  const modal    = document.getElementById('calendar-modal');
+  const iframe   = document.getElementById('cal-iframe');
+  const noUrl    = document.getElementById('cal-no-url');
+  const openLink = document.getElementById('cal-open-link');
+  if (store.calendarUrl) {
+    iframe.src = store.calendarUrl;
+    iframe.style.display = '';
+    noUrl.style.display = 'none';
+    const calPageUrl = store.calendarUrl.replace('embedded=true', 'embedded=false').replace('/embed/', '/');
+    openLink.href = calPageUrl;
+  } else {
+    iframe.src = '';
+    iframe.style.display = 'none';
+    noUrl.style.display = '';
+    openLink.href = '';
+  }
+  modal.style.display = 'flex';
+}
+function closeCalendarModal() {
+  document.getElementById('calendar-modal').style.display = 'none';
+  document.getElementById('cal-iframe').src = '';
+}
 function saveEvents()     { renderEvents(); saveEventsToSupabase(); }
 
 // ---- STAFF ----
@@ -457,9 +545,14 @@ function advanceSlide() {
 
 // ---- HERO PHOTOS ADMIN ----
 function renderAdminHeroPhotos() {
-  document.getElementById('photos-admin-list').innerHTML = store.heroPhotos.length
+  const n = store.heroPhotos.length;
+  document.getElementById('photos-admin-list').innerHTML = n
     ? store.heroPhotos.map((p, i) => `
     <div class="event-entry" style="display:flex;align-items:center;gap:1rem;flex-wrap:wrap;">
+      <div style="display:flex;flex-direction:column;gap:3px;flex-shrink:0;">
+        <button class="reorder-btn" onclick="moveHeroPhoto(${i},-1)" ${i===0?'disabled':''}>▲</button>
+        <button class="reorder-btn" onclick="moveHeroPhoto(${i}, 1)" ${i===n-1?'disabled':''}>▼</button>
+      </div>
       <button class="entry-remove" onclick="removeHeroPhoto(${i})" style="position:static;">Remove</button>
       ${p.url ? `<img src="${p.url}" style="width:80px;height:52px;object-fit:cover;border-radius:4px;flex-shrink:0;">` : ''}
       <div style="flex:1;min-width:200px;">
@@ -471,6 +564,13 @@ function renderAdminHeroPhotos() {
       </div>
     </div>`).join('')
     : '<p style="color:var(--text-light);font-size:0.88rem;">No photos yet. Add one below.</p>';
+}
+
+function moveHeroPhoto(i, dir) {
+  const j = i + dir;
+  if (j < 0 || j >= store.heroPhotos.length) return;
+  [store.heroPhotos[i], store.heroPhotos[j]] = [store.heroPhotos[j], store.heroPhotos[i]];
+  renderAdminHeroPhotos();
 }
 
 async function uploadHeroPhoto(i, input) {
@@ -533,6 +633,101 @@ function initAboutEditors() {
   quillAboutVision  = new Quill('#admin-about-vision-editor',  { theme: 'snow', modules: { toolbar: richToolbar } });
   quillAboutMission = new Quill('#admin-about-mission-editor', { theme: 'snow', modules: { toolbar: richToolbar } });
   quillAboutMotto   = new Quill('#admin-about-motto-editor',   { theme: 'snow', modules: { toolbar: richToolbar } });
+}
+
+// ---- GALLERY ----
+function renderGallery() {
+  const grid  = document.getElementById('gallery-grid');
+  const empty = document.getElementById('gallery-no-photos');
+  const photos = store.galleryPhotos.filter(p => p.url);
+  if (!photos.length) { grid.innerHTML = ''; empty.style.display = ''; return; }
+  empty.style.display = 'none';
+  grid.innerHTML = photos.map((p, i) => `
+    <button class="gallery-thumb" onclick="openLightbox(${i})" style="background-image:url('${p.url}');background-size:cover;background-position:center;border:none;padding:0;">
+      ${p.caption ? `<div class="gallery-thumb-caption">${p.caption}</div>` : ''}
+    </button>`).join('');
+}
+
+function openGalleryModal() {
+  renderGallery();
+  document.getElementById('gallery-modal').style.display = 'flex';
+}
+function closeGalleryModal() { document.getElementById('gallery-modal').style.display = 'none'; }
+
+let lightboxIndex = 0;
+function openLightbox(i) {
+  const photos = store.galleryPhotos.filter(p => p.url);
+  lightboxIndex = i;
+  document.getElementById('lightbox-img').src = photos[i].url;
+  document.getElementById('lightbox-caption').textContent = photos[i].caption || '';
+  document.getElementById('lightbox-prev').style.visibility = i > 0 ? '' : 'hidden';
+  document.getElementById('lightbox-next').style.visibility = i < photos.length - 1 ? '' : 'hidden';
+  document.getElementById('lightbox').style.display = 'flex';
+}
+function closeLightbox() {
+  document.getElementById('lightbox').style.display = 'none';
+  document.getElementById('lightbox-img').src = '';
+}
+function lightboxNav(dir) {
+  const photos = store.galleryPhotos.filter(p => p.url);
+  const next = lightboxIndex + dir;
+  if (next >= 0 && next < photos.length) openLightbox(next);
+}
+document.addEventListener('keydown', e => {
+  if (document.getElementById('lightbox').style.display === 'flex') {
+    if (e.key === 'ArrowLeft')  lightboxNav(-1);
+    if (e.key === 'ArrowRight') lightboxNav(1);
+    if (e.key === 'Escape')     closeLightbox();
+  }
+  if (document.getElementById('gallery-modal').style.display === 'flex' && e.key === 'Escape') closeGalleryModal();
+});
+
+function renderAdminGallery() {
+  document.getElementById('gallery-admin-list').innerHTML = store.galleryPhotos.length
+    ? store.galleryPhotos.map((p, i) => `
+      <div class="event-entry" style="display:flex;align-items:center;gap:1rem;flex-wrap:wrap;">
+        <button class="entry-remove" onclick="removeGalleryPhoto(${i})" style="position:static;">Remove</button>
+        ${p.url ? `<img src="${p.url}" style="width:80px;height:52px;object-fit:cover;border-radius:4px;flex-shrink:0;">` : ''}
+        <div style="flex:1;min-width:200px;">
+          <div class="photo-upload-actions">
+            <input type="file" accept="image/*" id="gallery-file-${i}" style="display:none" onchange="uploadGalleryPhoto(${i}, this)">
+            <button class="upload-photo-btn" onclick="document.getElementById('gallery-file-${i}').click()">${p.url ? 'Replace' : 'Upload Photo'}</button>
+            <span class="upload-status" id="gallery-status-${i}"></span>
+          </div>
+          <input type="text" placeholder="Caption (optional)" value="${p.caption||''}" style="margin-top:0.5rem;width:100%;" onchange="store.galleryPhotos[${i}].caption=this.value">
+        </div>
+      </div>`).join('')
+    : '<p style="color:var(--text-light);font-size:0.88rem;">No photos yet. Click below to add one.</p>';
+}
+
+async function uploadGalleryPhoto(i, input) {
+  const file = input.files[0];
+  if (!file) return;
+  const statusEl = document.getElementById('gallery-status-' + i);
+  statusEl.textContent = 'Uploading…'; statusEl.className = 'upload-status uploading';
+  const ext = file.name.split('.').pop();
+  const filename = `gallery-${Date.now()}-${i}.${ext}`;
+  const { error } = await supabaseClient.storage.from('staff-photos').upload(filename, file, { contentType: file.type });
+  if (error) { statusEl.textContent = 'Failed: ' + error.message; statusEl.className = 'upload-status error'; return; }
+  const { data: { publicUrl } } = supabaseClient.storage.from('staff-photos').getPublicUrl(filename);
+  store.galleryPhotos[i].url = publicUrl;
+  statusEl.textContent = 'Uploaded!'; statusEl.className = 'upload-status success';
+  renderAdminGallery();
+}
+
+function addGalleryPhoto() {
+  store.galleryPhotos.push({ url: '', caption: '' });
+  renderAdminGallery();
+  setTimeout(() => document.getElementById(`gallery-file-${store.galleryPhotos.length - 1}`)?.click(), 100);
+}
+function removeGalleryPhoto(i) { store.galleryPhotos.splice(i, 1); renderAdminGallery(); }
+
+async function saveGallery() {
+  if (SUPABASE_URL === 'YOUR_SUPABASE_URL') { showToast(); return; }
+  await supabaseClient.from('gallery_photos').delete().neq('id', 0);
+  const rows = store.galleryPhotos.filter(p => p.url).map((p, i) => ({ url: p.url, caption: p.caption || '', sort_order: i }));
+  const { error } = rows.length ? await supabaseClient.from('gallery_photos').insert(rows) : { error: null };
+  error ? alert('Save failed: ' + error.message) : showToast();
 }
 
 // Init
