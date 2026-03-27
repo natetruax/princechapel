@@ -86,7 +86,10 @@
     <br>
     <p class="section-body">Whether you're seeking a spiritual home, connection with others, or simply a place of peace — our doors are always open to you.</p>
     <br>
-    <button class="btn-primary" style="margin-top:0.5rem;" onclick="openAboutModal()">Learn More</button>
+    <div class="about-btn-group">
+      <button class="btn-primary" onclick="openAboutModal()">Who We Are</button>
+      <button class="btn-secondary" onclick="openHistoryModal()">Our History</button>
+    </div>
   </div>
   <div>
     <div class="about-visual">
@@ -139,6 +142,9 @@
   <h2 class="section-title">Recent Sermons</h2>
   <p class="section-body">Catch up on recent messages from our pastor.</p>
   <div class="sermons-grid" id="sermons-display"></div>
+  <div id="sermons-archive-link-wrap" style="display:none;text-align:center;margin-top:2rem;">
+    <button class="sermon-archive-link" onclick="openSermonArchive()">View Sermon Archive</button>
+  </div>
 </section>
 
 <!-- GIVE -->
@@ -415,6 +421,128 @@ La Jolla, CA</textarea>
   </div>
 </div>
 
+<!-- HISTORY MODAL -->
+<div id="history-modal" style="display:none;" onclick="if(event.target===this)closeHistoryModal()">
+  <div class="history-modal-box">
+    <button class="staff-modal-close" onclick="closeHistoryModal()">&#x2715;</button>
+    <div class="about-modal-header">
+      <p class="section-label" style="color:var(--gold);">Prince Chapel by the Sea AME</p>
+      <h2 class="about-modal-title">Our History</h2>
+    </div>
+    <div class="about-modal-body">
+
+      <div class="about-modal-section">
+        <h3>Roots in La Jolla &mdash; 1880s</h3>
+        <p>African Americans first came to La Jolla in the 1880s, drawn by domestic service work — as cooks, housekeepers, and laundry workers — for the wealthy resort community. Black-owned businesses gradually followed: laundromats, hair salons, and cottages along the coastline. These early residents laid the foundation for a lasting community presence that endures to this day.<sup class="history-cite">[1]</sup></p>
+      </div>
+
+      <div class="about-modal-section">
+        <h3>Founded 1921 &mdash; La Jolla Union Mission</h3>
+        <p>With no church of their own, Black residents had been attending a white Presbyterian church in La Jolla, where they felt unwelcome. In 1921, the congregation was established as the <strong>La Jolla Union Mission</strong> — believed to be the <em>first African American church in San Diego</em>. Members gathered in a small, two-room house near the current site. The church was a lifeline for domestic workers and their families, offering not just worship but community, dignity, and belonging.</p>
+      </div>
+
+      <div class="history-timeline">
+        <div class="history-timeline-item">
+          <div class="history-timeline-year">1943</div>
+          <div class="history-timeline-text">The congregation formally joins the <strong>African Methodist Episcopal</strong> denomination and adopts the name <em>Prince Chapel by the Sea</em>. This marks the official founding as an AME church.</div>
+        </div>
+        <div class="history-timeline-item">
+          <div class="history-timeline-year">1948</div>
+          <div class="history-timeline-text">A new church building is constructed. During construction, services are held at the La Jolla Recreation Center, with the congregation's faith holding the community together.</div>
+        </div>
+        <div class="history-timeline-item">
+          <div class="history-timeline-year">1985</div>
+          <div class="history-timeline-text">First major remodel of the church building, expanding the congregation's capacity for worship and service.</div>
+        </div>
+        <div class="history-timeline-item">
+          <div class="history-timeline-year">2008</div>
+          <div class="history-timeline-text">A second major remodel modernizes the building while honoring the church's historic character.</div>
+        </div>
+        <div class="history-timeline-item">
+          <div class="history-timeline-year">2018</div>
+          <div class="history-timeline-text">Rev. Denise Jackson delivers her first sermon at Prince Chapel in October, beginning a new chapter of leadership rooted in theological education and community advocacy.<sup class="history-cite">[2]</sup></div>
+        </div>
+        <div class="history-timeline-item">
+          <div class="history-timeline-year">Today</div>
+          <div class="history-timeline-text">Prince Chapel by the Sea remains the oldest African American institution still operating in La Jolla — over 100 years of unbroken faith, service, and presence in the community.</div>
+        </div>
+      </div>
+
+      <div class="about-modal-section">
+        <h3>A Presence That Endured</h3>
+        <p>La Jolla has been documented as a historically exclusionary community — one where Black residents faced discrimination and were unwelcome after dark.<sup class="history-cite">[3]</sup> Against that backdrop, Prince Chapel's century-long presence is a testament to the resilience and determination of its congregation. The church has stood not just as a house of worship, but as a symbol of belonging in a community that long denied it.</p>
+      </div>
+
+      <div class="about-modal-section">
+        <h3>The AME Heritage</h3>
+        <p>The African Methodist Episcopal Church was founded on <strong>April 9, 1816</strong>, in Philadelphia by <strong>Richard Allen</strong>, a formerly enslaved man who became the first AME bishop. The denomination was born in direct response to racial segregation in the Methodist Episcopal Church — Allen and other Black worshippers had been physically removed from pews during services. The AME Church became the <em>first independent Black Protestant denomination in the United States</em>, and today Prince Chapel carries forward more than 200 years of that tradition.<sup class="history-cite">[4]</sup></p>
+      </div>
+
+      <div class="about-modal-section">
+        <h3>Community &amp; Outreach</h3>
+        <p>Prince Chapel has always been more than a place of Sunday worship. Over the decades, the congregation has awarded <strong>scholarships</strong> to youth, partnered with a local <strong>women's shelter</strong>, conducted <strong>homeless outreach</strong>, and produced student body presidents, athletes, and scholars at La Jolla schools.<sup class="history-cite">[5]</sup> The annual <strong>Pillar of Light Festival</strong> — a Black History Month kickoff with music, guest speakers, and community awards — celebrates the people and spirit that have kept this church alive. The church teaches its youth "to have a voice and to use it in a positive, effective and responsible manner."<sup class="history-cite">[5]</sup></p>
+      </div>
+
+      <div class="about-modal-section">
+        <h3>Notable Figures</h3>
+        <div class="history-figures-list">
+          <div class="history-figure-item">
+            <div class="history-figure-name">Lorenza Pace &amp; Bettye Brown</div>
+            <div class="history-figure-desc">Church members and co-authors of <em>La Jolla California Black Pioneers and Pioneers Descendants 1880–1974</em>, a documented record of African American heritage in La Jolla.<sup class="history-cite">[6]</sup></div>
+          </div>
+          <div class="history-figure-item">
+            <div class="history-figure-name">Oscar Knight III</div>
+            <div class="history-figure-desc">Honored posthumously with the 2nd Annual Pillar of Light Award for his contributions to the community.<sup class="history-cite">[5]</sup></div>
+          </div>
+          <div class="history-figure-item">
+            <div class="history-figure-name">Rev. Denise Jackson</div>
+            <div class="history-figure-desc">Current pastor, ordained Itinerate Deacon in the AME Church, theologian, and author of <em>60 Ways to Save Your Home From Foreclosure</em>. Delivered her first sermon at Prince Chapel in October 2018.<sup class="history-cite">[2]</sup></div>
+          </div>
+        </div>
+      </div>
+
+      <div class="about-modal-section">
+        <h3>In the News</h3>
+        <div class="history-news-list">
+          <a class="history-news-item" href="https://www.sandiegouniontribune.com/2015/02/20/faith-for-families-prince-chapel-by-the-sea-african-methodist-episcopal-church/#:~:text=Prince%20Chapel%20by%20the%20Sea%20African%20Methodist%20Episcopal%20Church%20on,the%20building%20blocks%20of%20society.%E2%80%9D" target="_blank" rel="noopener">
+            <span class="history-news-source">La Jolla Light</span>
+            <span class="history-news-date">Feb 20, 2015</span>
+            <span class="history-news-headline">Feature on Prince Chapel's history and lasting role in La Jolla &#8599;</span>
+          </a>
+          <a class="history-news-item" href="https://sdvoice.info/black-history-at-prince-chapel-by-the-sea-a-m-e/" target="_blank" rel="noopener">
+            <span class="history-news-source">San Diego Voice &amp; Viewpoint</span>
+            <span class="history-news-date">Feb 21, 2014</span>
+            <span class="history-news-headline">"Black History at Prince Chapel By The Sea A.M.E." — covering the Pillar of Light Award ceremony and Black History Month celebration &#8599;</span>
+          </a>
+          <a class="history-news-item" href="https://www.sandiegouniontribune.com/2020/06/14/nation-at-a-crossroads-prince-chapel-ame-pastor-shares-thoughts-on-racial-injustice-and-chances-for-change/" target="_blank" rel="noopener">
+            <span class="history-news-source">La Jolla Light</span>
+            <span class="history-news-date">Nov 30, 2018</span>
+            <span class="history-news-headline">"People in Your Neighborhood: Denise Jackson revs up Prince Chapel" — profile of incoming pastor Rev. Denise Jackson &#8599;</span>
+          </a>
+          <a class="history-news-item" href="https://sites.sandiego.edu/blackhistoryatusd/2019/05/07/la-jolla-union-mission-church-brooke-raboutou/" target="_blank" rel="noopener">
+            <span class="history-news-source">University of San Diego</span>
+            <span class="history-news-date">2019</span>
+            <span class="history-news-headline">Academic study: "La Jolla Union Mission Church" — origins and role in San Diego's Black history &#8599;</span>
+          </a>
+        </div>
+      </div>
+
+      <div class="history-citations">
+        <h4 class="history-citations-title">Sources &amp; Citations</h4>
+        <ol class="history-citations-list">
+          <li><a href="https://blackhistorymonth.ucsd.edu/2020/documents/la-jolla-black-pioneers.pdf" target="_blank" rel="noopener">UCSD Black History Month. <em>La Jolla Black Pioneers.</em> 2020.</a></li>
+          <li><a href="https://www.sandiegouniontribune.com/2020/06/14/nation-at-a-crossroads-prince-chapel-ame-pastor-shares-thoughts-on-racial-injustice-and-chances-for-change/" target="_blank" rel="noopener">La Jolla Light (now San Diego Union-Tribune). "People in Your Neighborhood: Denise Jackson revs up Prince Chapel." Nov 30, 2018.</a></li>
+          <li>Loewen, J. W. <em>Sundown Towns: A Hidden Dimension of American Racism.</em> New Press, 2005.</li>
+          <li><a href="https://www.ame-church.com/our-church/our-history/" target="_blank" rel="noopener">African Methodist Episcopal Church. "Our History." ame-church.com.</a></li>
+          <li><a href="https://sdvoice.info/black-history-at-prince-chapel-by-the-sea-a-m-e/" target="_blank" rel="noopener">San Diego Voice &amp; Viewpoint. "Black History at Prince Chapel By The Sea A.M.E." Feb 21, 2014.</a></li>
+          <li>Pace, L. &amp; Brown, B. <em>La Jolla California Black Pioneers and Pioneers Descendants 1880–1974.</em> Documented by church members.</li>
+        </ol>
+      </div>
+
+    </div>
+  </div>
+</div>
+
 <!-- ABOUT MODAL -->
 <div id="about-modal" style="display:none;" onclick="if(event.target===this)closeAboutModal()">
   <div class="about-modal-box">
@@ -457,6 +585,20 @@ La Jolla, CA</textarea>
       <h2 id="staff-modal-name" class="staff-modal-name"></h2>
       <p id="staff-modal-bio" class="staff-modal-bio"></p>
     </div>
+  </div>
+</div>
+
+<!-- SERMON ARCHIVE MODAL -->
+<div id="sermon-archive-modal" style="display:none;" onclick="if(event.target===this)closeSermonArchive()">
+  <div class="sermon-archive-box">
+    <div class="sermon-archive-header">
+      <div>
+        <p class="section-label" style="color:var(--gold);margin:0 0 0.25rem;">Prince Chapel AME</p>
+        <h2 class="sermon-archive-title">Sermon Archive</h2>
+      </div>
+      <button class="staff-modal-close" onclick="closeSermonArchive()">&#x2715;</button>
+    </div>
+    <div class="sermon-archive-body" id="sermon-archive-content"></div>
   </div>
 </div>
 

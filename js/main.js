@@ -8,6 +8,8 @@ const SUPABASE_ANON_KEY = 'sb_publishable_PEYoViM0hul26oFvD7Wcow_FjJEFHqA'; // S
 const ADMIN_EMAILS = [
   'natetruax20@gmail.com',
   'melanie.lanae@gmail.com',
+  'alicia.sims621@gmail.com',
+  'nazarethgurl94@gmail.com'
 ];
 // ============================================================
 
@@ -131,14 +133,16 @@ async function loadFromSupabase() {
   const [eventsRes, staffRes, sermonsRes, aboutRes, photosRes, galleryRes] = await Promise.all([
     supabaseClient.from('events').select('*').order('sort_order'),
     supabaseClient.from('staff').select('*').order('sort_order'),
-    supabaseClient.from('sermons').select('*').order('date', { ascending: false }),
+    supabaseClient.from('sermons').select('*'),
     supabaseClient.from('about').select('*').limit(1),
     supabaseClient.from('hero_photos').select('*').order('sort_order'),
     supabaseClient.from('gallery_photos').select('*').order('sort_order')
   ]);
   if (eventsRes.data && eventsRes.data.length)  store.events     = eventsRes.data;
   if (staffRes.data  && staffRes.data.length)   store.staff      = staffRes.data;
-  if (sermonsRes.data && sermonsRes.data.length) store.sermons   = sermonsRes.data;
+  if (sermonsRes.data && sermonsRes.data.length) {
+    store.sermons = sermonsRes.data.sort((a, b) => toDateValue(b.date).localeCompare(toDateValue(a.date)));
+  }
   if (aboutRes.data  && aboutRes.data.length) {
     Object.assign(store.about, aboutRes.data[0]);
     store.calendarUrl = store.about.calendar_url || '';
@@ -431,21 +435,94 @@ function removeStaff(i)  { store.staff.splice(i,1); renderAdminStaff(); }
 function saveStaff()     { renderStaff(); saveStaffToSupabase(); }
 
 // ---- SERMONS ----
+const SERMONS_VISIBLE = 4;
+
+// Normalize any stored date string to YYYY-MM-DD for reliable sorting/parsing.
+// Handles both "March 16, 2025" (legacy) and "2025-03-16" (new) formats.
+function toDateValue(dateStr) {
+  if (!dateStr) return '';
+  // Already YYYY-MM-DD
+  if (/^\d{4}-\d{2}-\d{2}$/.test(dateStr)) return dateStr;
+  const d = new Date(dateStr);
+  if (isNaN(d)) return '';
+  return d.toISOString().slice(0, 10);
+}
+
+// Format YYYY-MM-DD (or legacy text) as "March 16, 2025" for display.
+function formatSermonDate(dateStr) {
+  const iso = toDateValue(dateStr);
+  if (!iso) return dateStr || '';
+  // Parse as local date to avoid timezone-shifting the day
+  const [y, m, d] = iso.split('-').map(Number);
+  return new Date(y, m - 1, d).toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' });
+}
+
+function sermonCardHTML(s) {
+  const hasLink = s.url && s.url.trim() !== '';
+  return `
+  <div class="sermon-card">
+    <div class="sermon-meta">
+      <span class="sermon-date">${formatSermonDate(s.date)}</span>
+      <span class="sermon-speaker">${s.speaker}</span>
+    </div>
+    <h3 class="sermon-title">${s.title}</h3>
+    ${hasLink
+      ? `<a href="${s.url}" target="_blank" class="sermon-listen-btn">&#9654; Watch</a>`
+      : `<span class="sermon-no-link">Recording coming soon</span>`}
+  </div>`;
+}
+
 function renderSermons() {
-  document.getElementById('sermons-display').innerHTML = store.sermons.map(s => {
-    const hasLink = s.url && s.url.trim() !== '';
-    return `
-    <div class="sermon-card">
-      <div class="sermon-meta">
-        <span class="sermon-date">${s.date}</span>
-        <span class="sermon-speaker">${s.speaker}</span>
-      </div>
-      <h3 class="sermon-title">${s.title}</h3>
-      ${hasLink
-        ? `<a href="${s.url}" target="_blank" class="sermon-listen-btn">&#9654; Watch</a>`
-        : `<span class="sermon-no-link">Recording coming soon</span>`}
+  const recent = store.sermons.slice(0, SERMONS_VISIBLE);
+  document.getElementById('sermons-display').innerHTML = recent.map(sermonCardHTML).join('');
+  const wrap = document.getElementById('sermons-archive-link-wrap');
+  if (wrap) wrap.style.display = store.sermons.length > SERMONS_VISIBLE ? 'block' : 'none';
+}
+
+function openSermonArchive() {
+  const archived = store.sermons.slice(SERMONS_VISIBLE);
+  if (!archived.length) return;
+
+  // Group by year then month using normalized ISO dates
+  const groups = {};
+  archived.forEach(s => {
+    const iso = toDateValue(s.date);
+    const d = iso ? new Date(iso + 'T00:00:00') : null;
+    const year = d ? d.getFullYear() : 'Unknown';
+    const month = d ? d.toLocaleString('default', { month: 'long' }) : 'Unknown';
+    const monthNum = d ? d.getMonth() : -1;
+    if (!groups[year]) groups[year] = {};
+    if (!groups[year][month]) groups[year][month] = { order: monthNum, items: [] };
+    groups[year][month].items.push(s);
+  });
+
+  // Render newest year first
+  const years = Object.keys(groups).sort((a, b) => b - a);
+  const html = years.map(year => {
+    const months = Object.keys(groups[year]).sort((a, b) => {
+      return groups[year][b].order - groups[year][a].order;
+    });
+    const monthsHTML = months.map(month => {
+      const cards = groups[year][month].items.map(sermonCardHTML).join('');
+      return `<div class="archive-month-group">
+        <h4 class="archive-month-label">${month}</h4>
+        <div class="archive-cards">${cards}</div>
+      </div>`;
+    }).join('');
+    return `<div class="archive-year-group">
+      <h3 class="archive-year-label">${year}</h3>
+      ${monthsHTML}
     </div>`;
   }).join('');
+
+  document.getElementById('sermon-archive-content').innerHTML = html;
+  document.getElementById('sermon-archive-modal').style.display = 'flex';
+  document.body.style.overflow = 'hidden';
+}
+
+function closeSermonArchive() {
+  document.getElementById('sermon-archive-modal').style.display = 'none';
+  document.body.style.overflow = '';
 }
 
 function renderAdminSermons() {
@@ -454,7 +531,7 @@ function renderAdminSermons() {
       <button class="entry-remove" onclick="removeSermon(${i})">Remove</button>
       <div class="form-row">
         <div class="form-group"><label>Sermon Title</label><input type="text" value="${s.title}" onchange="store.sermons[${i}].title=this.value"></div>
-        <div class="form-group"><label>Date</label><input type="text" value="${s.date}" onchange="store.sermons[${i}].date=this.value"></div>
+        <div class="form-group"><label>Date</label><input type="date" value="${toDateValue(s.date)}" onchange="store.sermons[${i}].date=this.value"></div>
       </div>
       <div class="form-row">
         <div class="form-group"><label>Speaker</label><input type="text" value="${s.speaker}" onchange="store.sermons[${i}].speaker=this.value"></div>
@@ -487,6 +564,16 @@ async function saveAbout() {
   await supabaseClient.from('about').delete().neq('id', 0);
   const { error } = await supabaseClient.from('about').insert([store.about]);
   error ? alert('Save failed: ' + error.message) : showToast();
+}
+
+// ---- HISTORY MODAL ----
+function openHistoryModal() {
+  document.getElementById('history-modal').style.display = 'flex';
+  document.body.style.overflow = 'hidden';
+}
+function closeHistoryModal() {
+  document.getElementById('history-modal').style.display = 'none';
+  document.body.style.overflow = '';
 }
 
 // ---- ABOUT MODAL ----
