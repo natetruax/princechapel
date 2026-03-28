@@ -1,10 +1,7 @@
 // ============================================================
-// CONFIGURATION — fill these in after Supabase setup
+// CONFIGURATION
 // ============================================================
-const SUPABASE_URL     = 'https://suisumcbjgrpbwbxvedo.supabase.co';       // e.g. https://xyzabc.supabase.co
-const SUPABASE_ANON_KEY = 'sb_publishable_PEYoViM0hul26oFvD7Wcow_FjJEFHqA'; // Supabase > Settings > API > anon key
-
-// Google email addresses approved as admins — add as many as needed
+// Google email addresses approved as admins — for reference/error messaging
 const ADMIN_EMAILS = [
   'natetruax20@gmail.com',
   'melanie.lanae@gmail.com',
@@ -13,32 +10,26 @@ const ADMIN_EMAILS = [
 ];
 // ============================================================
 
-const supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY, {
-  auth: { flowType: 'pkce' }
-});
 let currentUser = null;
 
 // ---- AUTH ----
 async function initAuth() {
-  const { data: { session } } = await supabaseClient.auth.getSession();
-  if (session) handleSession(session);
-  supabaseClient.auth.onAuthStateChange((_event, session) => {
-    if (session) handleSession(session);
-    else handleSignOut();
-  });
+  const res = await fetch('/api/auth/me');
+  const data = await res.json();
+  if (data.email) handleSession(data);
+  // Check for login error in URL params
+  const params = new URLSearchParams(window.location.search);
+  if (params.get('login_error') === 'unauthorized') {
+    openLoginModal();
+    showLoginError('Your Google account is not an approved admin.');
+  }
 }
 
-function handleSession(session) {
-  const email = session.user.email;
-  if (ADMIN_EMAILS.includes(email)) {
-    currentUser = session.user;
-    document.getElementById('admin-toggle').style.display = 'flex';
-    closeLoginModal();
-    showToast('Signed in — tap the admin button to continue');
-  } else {
-    supabaseClient.auth.signOut();
-    showLoginError('Your Google account (' + email + ') is not an approved admin. Please contact the church office.');
-  }
+function handleSession(user) {
+  currentUser = user;
+  document.getElementById('admin-toggle').style.display = 'flex';
+  closeLoginModal();
+  showToast('Signed in — tap the admin button to continue');
 }
 
 function handleSignOut() {
@@ -46,17 +37,13 @@ function handleSignOut() {
   document.getElementById('admin-toggle').style.display = 'none';
 }
 
-async function signInWithGoogle() {
-  const { error } = await supabaseClient.auth.signInWithOAuth({
-    provider: 'google',
-    options: { redirectTo: window.location.href }
-  });
-  if (error) showLoginError(error.message);
+function signInWithGoogle() {
+  window.location.href = '/api/auth/google';
 }
 
 async function signOut() {
-  await supabaseClient.auth.signOut();
-  closeAdmin();
+  await fetch('/api/auth/logout', { method: 'POST' });
+  window.location.reload();
 }
 
 function showLoginError(msg) {
@@ -92,7 +79,7 @@ document.getElementById('footer-brand-tap').addEventListener('click', () => {
   }
 });
 
-// ---- DATA STORE (default sample data — replaced by Supabase once configured) ----
+// ---- DATA STORE (default sample data — replaced by API once loaded) ----
 const store = {
   heroPhotos: [],
   calendarUrl: '',
@@ -126,64 +113,71 @@ const store = {
   galleryPhotos: []
 };
 
-// ---- SUPABASE DATA LOAD & SAVE ----
-// Once your tables are created (see setup guide), these pull live data from Supabase.
-async function loadFromSupabase() {
-  if (SUPABASE_URL === 'YOUR_SUPABASE_URL') return;
-  const [eventsRes, staffRes, sermonsRes, aboutRes, photosRes, galleryRes] = await Promise.all([
-    supabaseClient.from('events').select('*').order('sort_order'),
-    supabaseClient.from('staff').select('*').order('sort_order'),
-    supabaseClient.from('sermons').select('*'),
-    supabaseClient.from('about').select('*').limit(1),
-    supabaseClient.from('hero_photos').select('*').order('sort_order'),
-    supabaseClient.from('gallery_photos').select('*').order('sort_order')
-  ]);
-  if (eventsRes.data && eventsRes.data.length)  store.events     = eventsRes.data;
-  if (staffRes.data  && staffRes.data.length)   store.staff      = staffRes.data;
-  if (sermonsRes.data && sermonsRes.data.length) {
-    store.sermons = sermonsRes.data.sort((a, b) => toDateValue(b.date).localeCompare(toDateValue(a.date)));
+// ---- DATA LOAD & SAVE ----
+async function loadData() {
+  try {
+    const res = await fetch('/api/data');
+    if (!res.ok) return;
+    const data = await res.json();
+    if (data.events      && data.events.length)       store.events       = data.events;
+    if (data.staff       && data.staff.length)        store.staff        = data.staff;
+    if (data.sermons     && data.sermons.length) {
+      store.sermons = data.sermons.sort((a, b) => toDateValue(b.date).localeCompare(toDateValue(a.date)));
+    }
+    if (data.about && data.about.id) {
+      Object.assign(store.about, data.about);
+      store.calendarUrl = store.about.calendar_url || '';
+      applyContactToPage();
+    }
+    if (data.heroPhotos    && data.heroPhotos.length)    store.heroPhotos    = data.heroPhotos;
+    if (data.galleryPhotos && data.galleryPhotos.length) store.galleryPhotos = data.galleryPhotos;
+    renderEvents();
+    renderStaff();
+    renderSermons();
+    initSlideshow();
+  } catch (e) {
+    console.error('Failed to load data:', e);
   }
-  if (aboutRes.data  && aboutRes.data.length) {
-    Object.assign(store.about, aboutRes.data[0]);
-    store.calendarUrl = store.about.calendar_url || '';
-    applyContactToPage();
-  }
-  if (photosRes.data  && photosRes.data.length)  store.heroPhotos    = photosRes.data;
-  if (galleryRes.data && galleryRes.data.length) store.galleryPhotos = galleryRes.data;
-  renderEvents();
-  renderStaff();
-  renderSermons();
-  initSlideshow();
 }
 
-async function saveEventsToSupabase() {
-  if (SUPABASE_URL === 'YOUR_SUPABASE_URL') { showToast(); return; }
-  await supabaseClient.from('events').delete().neq('id', 0);
-  const rows = store.events.map((e,i) => { const {id, ...rest} = e; return {...rest, sort_order:i}; });
-  const { error } = rows.length ? await supabaseClient.from('events').insert(rows) : { error: null };
-  if (error) { alert('Save failed: ' + error.message); return; }
+async function saveEvents() {
+  renderEvents();
   store.about.calendar_url = store.calendarUrl;
-  const { id: _id, ...aboutData } = store.about;
-  await supabaseClient.from('about').delete().neq('id', 0);
-  const { error: aboutError } = await supabaseClient.from('about').insert([aboutData]);
-  if (aboutError) { alert('Calendar URL save failed: ' + aboutError.message); return; }
+  const eventsRes = await fetch('/api/save/events', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ events: store.events })
+  });
+  if (!eventsRes.ok) { alert('Save failed'); return; }
+  const aboutRes = await fetch('/api/save/about', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(store.about)
+  });
+  if (!aboutRes.ok) { alert('Calendar URL save failed'); return; }
   showToast();
 }
 
-async function saveStaffToSupabase() {
-  if (SUPABASE_URL === 'YOUR_SUPABASE_URL') { showToast(); return; }
-  await supabaseClient.from('staff').delete().neq('id', 0);
-  const rows = store.staff.map((s,i) => { const {id, ...rest} = s; return {...rest, sort_order:i}; });
-  const { error } = rows.length ? await supabaseClient.from('staff').insert(rows) : { error: null };
-  error ? alert('Save failed: ' + error.message) : showToast();
+async function saveStaff() {
+  renderStaff();
+  const res = await fetch('/api/save/staff', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ staff: store.staff })
+  });
+  if (!res.ok) { alert('Save failed'); return; }
+  showToast();
 }
 
-async function saveSermonsToSupabase() {
-  if (SUPABASE_URL === 'YOUR_SUPABASE_URL') { showToast(); return; }
-  await supabaseClient.from('sermons').delete().neq('id', 0);
-  const rows = store.sermons.map(s => { const {id, ...rest} = s; return rest; });
-  const { error } = rows.length ? await supabaseClient.from('sermons').insert(rows) : { error: null };
-  error ? alert('Save failed: ' + error.message) : showToast();
+async function saveSermons() {
+  renderSermons();
+  const res = await fetch('/api/save/sermons', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ sermons: store.sermons })
+  });
+  if (!res.ok) { alert('Save failed'); return; }
+  showToast();
 }
 
 // ---- ADMIN PANEL ----
@@ -242,11 +236,12 @@ async function saveServices() {
   store.about.email        = document.getElementById('admin-email').value;
   store.about.office_hours = document.getElementById('admin-office').value;
   applyContactToPage();
-  if (SUPABASE_URL === 'YOUR_SUPABASE_URL') { showToast(); return; }
-  const { id: _id, ...aboutData } = store.about;
-  await supabaseClient.from('about').delete().neq('id', 0);
-  const { error } = await supabaseClient.from('about').insert([aboutData]);
-  error ? alert('Save failed: ' + error.message) : showToast();
+  const res = await fetch('/api/save/about', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(store.about)
+  });
+  res.ok ? showToast() : alert('Save failed');
 }
 
 // ---- EVENTS ----
@@ -324,7 +319,6 @@ function closeCalendarModal() {
   document.getElementById('calendar-modal').style.display = 'none';
   document.getElementById('cal-iframe').src = '';
 }
-function saveEvents()     { renderEvents(); saveEventsToSupabase(); }
 
 // ---- STAFF ----
 function renderStaff() {
@@ -397,6 +391,7 @@ function renderAdminStaff() {
       <div class="form-group"><label>Title / Role</label><input type="text" value="${s.role}" onchange="store.staff[${i}].role=this.value"></div>
       <div class="form-group"><label>Short Bio</label><div id="staff-bio-editor-${i}" class="rich-editor"></div></div>
     </div>`).join('');
+
   store.staff.forEach((s, i) => {
     const q = new Quill(`#staff-bio-editor-${i}`, { theme: 'snow', formats: richFormats, modules: { toolbar: richToolbar } });
     q.root.innerHTML = s.bio || '';
@@ -411,28 +406,24 @@ async function uploadStaffPhoto(i, input) {
   const statusEl = document.getElementById('upload-status-' + i);
   statusEl.textContent = 'Uploading…';
   statusEl.className = 'upload-status uploading';
-  const ext = file.name.split('.').pop();
-  const filename = `staff-${Date.now()}-${i}.${ext}`;
-  const { error } = await supabaseClient.storage
-    .from('staff-photos')
-    .upload(filename, file, { contentType: file.type });
-  if (error) {
-    statusEl.textContent = 'Upload failed: ' + error.message;
+  try {
+    const formData = new FormData();
+    formData.append('file', file);
+    const res = await fetch('/api/upload', { method: 'POST', body: formData });
+    if (!res.ok) throw new Error('Upload failed');
+    const { url } = await res.json();
+    store.staff[i].photo = url;
+    statusEl.textContent = 'Uploaded!';
+    statusEl.className = 'upload-status success';
+    renderAdminStaff();
+  } catch (e) {
+    statusEl.textContent = 'Upload failed: ' + e.message;
     statusEl.className = 'upload-status error';
-    return;
   }
-  const { data: { publicUrl } } = supabaseClient.storage
-    .from('staff-photos')
-    .getPublicUrl(filename);
-  store.staff[i].photo = publicUrl;
-  statusEl.textContent = 'Uploaded!';
-  statusEl.className = 'upload-status success';
-  renderAdminStaff();
 }
 
 function addStaffEntry() { store.staff.push({name:'New Member',initials:'NM',photo:'',role:'Title',bio:''}); renderAdminStaff(); }
 function removeStaff(i)  { store.staff.splice(i,1); renderAdminStaff(); }
-function saveStaff()     { renderStaff(); saveStaffToSupabase(); }
 
 // ---- SERMONS ----
 const SERMONS_VISIBLE = 4;
@@ -542,7 +533,6 @@ function renderAdminSermons() {
 
 function addSermonEntry() { store.sermons.push({title:'New Sermon',date:'',speaker:'',url:''}); renderAdminSermons(); }
 function removeSermon(i)  { store.sermons.splice(i,1); renderAdminSermons(); }
-function saveSermons()    { renderSermons(); saveSermonsToSupabase(); }
 
 // ---- ABOUT ----
 function renderAdminAbout() {
@@ -560,10 +550,12 @@ async function saveAbout() {
     store.about.mission = quillAboutMission.root.innerHTML;
     store.about.motto   = quillAboutMotto.root.innerHTML;
   }
-  if (SUPABASE_URL === 'YOUR_SUPABASE_URL') { showToast(); return; }
-  await supabaseClient.from('about').delete().neq('id', 0);
-  const { error } = await supabaseClient.from('about').insert([store.about]);
-  error ? alert('Save failed: ' + error.message) : showToast();
+  const res = await fetch('/api/save/about', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(store.about)
+  });
+  res.ok ? showToast() : alert('Save failed');
 }
 
 // ---- HISTORY MODAL ----
@@ -666,16 +658,21 @@ async function uploadHeroPhoto(i, input) {
   const statusEl = document.getElementById('hero-upload-status-' + i);
   statusEl.textContent = 'Uploading…';
   statusEl.className = 'upload-status uploading';
-  const ext = file.name.split('.').pop();
-  const filename = `hero-${Date.now()}-${i}.${ext}`;
-  const { error } = await supabaseClient.storage.from('staff-photos').upload(filename, file, { contentType: file.type });
-  if (error) { statusEl.textContent = 'Failed: ' + error.message; statusEl.className = 'upload-status error'; return; }
-  const { data: { publicUrl } } = supabaseClient.storage.from('staff-photos').getPublicUrl(filename);
-  store.heroPhotos[i].url = publicUrl;
-  statusEl.textContent = 'Uploaded!';
-  statusEl.className = 'upload-status success';
-  renderAdminHeroPhotos();
-  initSlideshow();
+  try {
+    const formData = new FormData();
+    formData.append('file', file);
+    const res = await fetch('/api/upload', { method: 'POST', body: formData });
+    if (!res.ok) throw new Error('Upload failed');
+    const { url } = await res.json();
+    store.heroPhotos[i].url = url;
+    statusEl.textContent = 'Uploaded!';
+    statusEl.className = 'upload-status success';
+    renderAdminHeroPhotos();
+    initSlideshow();
+  } catch (e) {
+    statusEl.textContent = 'Failed: ' + e.message;
+    statusEl.className = 'upload-status error';
+  }
 }
 
 function addHeroPhoto() {
@@ -688,11 +685,13 @@ function addHeroPhoto() {
 function removeHeroPhoto(i) { store.heroPhotos.splice(i, 1); renderAdminHeroPhotos(); initSlideshow(); }
 
 async function saveHeroPhotos() {
-  if (SUPABASE_URL === 'YOUR_SUPABASE_URL') { showToast(); return; }
-  await supabaseClient.from('hero_photos').delete().neq('id', 0);
-  const rows = store.heroPhotos.filter(p => p.url).map((p, i) => ({ url: p.url, sort_order: i }));
-  const { error } = rows.length ? await supabaseClient.from('hero_photos').insert(rows) : { error: null };
-  error ? alert('Save failed: ' + error.message) : showToast();
+  const res = await fetch('/api/save/hero-photos', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ photos: store.heroPhotos.filter(p => p.url) })
+  });
+  if (!res.ok) { alert('Save failed'); return; }
+  showToast();
 }
 
 // ---- MOBILE NAV ----
@@ -793,14 +792,18 @@ async function uploadGalleryPhoto(i, input) {
   if (!file) return;
   const statusEl = document.getElementById('gallery-status-' + i);
   statusEl.textContent = 'Uploading…'; statusEl.className = 'upload-status uploading';
-  const ext = file.name.split('.').pop();
-  const filename = `gallery-${Date.now()}-${i}.${ext}`;
-  const { error } = await supabaseClient.storage.from('staff-photos').upload(filename, file, { contentType: file.type });
-  if (error) { statusEl.textContent = 'Failed: ' + error.message; statusEl.className = 'upload-status error'; return; }
-  const { data: { publicUrl } } = supabaseClient.storage.from('staff-photos').getPublicUrl(filename);
-  store.galleryPhotos[i].url = publicUrl;
-  statusEl.textContent = 'Uploaded!'; statusEl.className = 'upload-status success';
-  renderAdminGallery();
+  try {
+    const formData = new FormData();
+    formData.append('file', file);
+    const res = await fetch('/api/upload', { method: 'POST', body: formData });
+    if (!res.ok) throw new Error('Upload failed');
+    const { url } = await res.json();
+    store.galleryPhotos[i].url = url;
+    statusEl.textContent = 'Uploaded!'; statusEl.className = 'upload-status success';
+    renderAdminGallery();
+  } catch (e) {
+    statusEl.textContent = 'Failed: ' + e.message; statusEl.className = 'upload-status error';
+  }
 }
 
 function addGalleryPhoto() {
@@ -811,16 +814,18 @@ function addGalleryPhoto() {
 function removeGalleryPhoto(i) { store.galleryPhotos.splice(i, 1); renderAdminGallery(); }
 
 async function saveGallery() {
-  if (SUPABASE_URL === 'YOUR_SUPABASE_URL') { showToast(); return; }
-  await supabaseClient.from('gallery_photos').delete().neq('id', 0);
-  const rows = store.galleryPhotos.filter(p => p.url).map((p, i) => ({ url: p.url, caption: p.caption || '', sort_order: i }));
-  const { error } = rows.length ? await supabaseClient.from('gallery_photos').insert(rows) : { error: null };
-  error ? alert('Save failed: ' + error.message) : showToast();
+  const res = await fetch('/api/save/gallery', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ photos: store.galleryPhotos.filter(p => p.url) })
+  });
+  if (!res.ok) { alert('Save failed'); return; }
+  showToast();
 }
 
 // Init
 initAuth();
-loadFromSupabase();
+loadData();
 renderEvents();
 renderStaff();
 renderSermons();
