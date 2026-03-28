@@ -457,21 +457,22 @@
   /* ---- EVENTS ---- */
   .events-section {
     background: var(--cream);
-    text-align: left;
+    text-align: center;
   }
 
   .events-header {
     display: flex;
     align-items: flex-end;
-    justify-content: space-between;
+    justify-content: center;
     margin-bottom: 2.5rem;
     flex-wrap: wrap;
     gap: 1rem;
   }
 
   .events-grid {
-    display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
     gap: 1.5rem;
   }
 
@@ -479,6 +480,8 @@
     background: var(--warm-white);
     border: 1px solid var(--border);
     border-radius: 8px;
+    flex: 1 1 300px;
+    max-width: 500px;
     padding: 1.5rem;
     display: flex;
     gap: 1.25rem;
