@@ -26,11 +26,12 @@ db.exec(`
   );
 
   CREATE TABLE IF NOT EXISTS sermons (
-    id      INTEGER PRIMARY KEY AUTOINCREMENT,
-    title   TEXT,
-    date    TEXT,
-    speaker TEXT,
-    url     TEXT
+    id         INTEGER PRIMARY KEY AUTOINCREMENT,
+    title      TEXT,
+    date       TEXT,
+    speaker    TEXT,
+    url        TEXT,
+    scripture  TEXT
   );
 
   CREATE TABLE IF NOT EXISTS about (

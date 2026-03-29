@@ -457,6 +457,7 @@ function sermonCardHTML(s) {
       <span class="sermon-speaker">${s.speaker}</span>
     </div>
     <h3 class="sermon-title">${s.title}</h3>
+    ${s.scripture ? `<div class="sermon-scripture">&#9753; ${s.scripture}</div>` : ''}
     ${hasLink
       ? `<a href="${s.url}" target="_blank" class="sermon-listen-btn">&#9654; Watch</a>`
       : `<span class="sermon-no-link">Recording coming soon</span>`}
@@ -526,8 +527,9 @@ function renderAdminSermons() {
       </div>
       <div class="form-row">
         <div class="form-group"><label>Speaker</label><input type="text" value="${s.speaker}" onchange="store.sermons[${i}].speaker=this.value"></div>
-        <div class="form-group"><label>YouTube / Podcast URL</label><input type="url" value="${s.url}" onchange="store.sermons[${i}].url=this.value" placeholder="https://..."></div>
+        <div class="form-group"><label>Scripture Reference</label><input type="text" value="${s.scripture||''}" onchange="store.sermons[${i}].scripture=this.value" placeholder="e.g. John 3:16"></div>
       </div>
+      <div class="form-group"><label>YouTube / Podcast URL</label><input type="url" value="${s.url}" onchange="store.sermons[${i}].url=this.value" placeholder="https://..."></div>
     </div>`).join('');
 }
 

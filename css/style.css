@@ -1285,6 +1285,13 @@
 
   .sermon-listen-btn:hover { opacity: 0.75; }
 
+  .sermon-scripture {
+    font-size: 0.78rem;
+    color: rgba(180,220,240,0.55);
+    font-style: italic;
+    margin: 0.4rem 0 0.6rem;
+  }
+
   .sermon-no-link {
     margin-top: 0.5rem;
     font-size: 0.78rem;

@@ -178,11 +178,11 @@ app.post('/api/save/sermons', requireAuth, (req, res) => {
     const { sermons } = req.body;
     db.prepare('DELETE FROM sermons').run();
     const insert = db.prepare(
-      'INSERT INTO sermons (title, date, speaker, url) VALUES (?, ?, ?, ?)'
+      'INSERT INTO sermons (title, date, speaker, url, scripture) VALUES (?, ?, ?, ?, ?)'
     );
     const insertMany = db.transaction((rows) => {
       rows.forEach((s) => {
-        insert.run(s.title || '', s.date || '', s.speaker || '', s.url || '');
+        insert.run(s.title || '', s.date || '', s.speaker || '', s.url || '', s.scripture || '');
       });
     });
     insertMany(sermons || []);
