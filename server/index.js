@@ -287,6 +287,24 @@ async function getChannelId() {
   throw new Error('Channel not found');
 }
 
+app.get('/api/youtube/live', async (req, res) => {
+  try {
+    if (!process.env.YOUTUBE_API_KEY) return res.json({ live: false });
+    const channelId = await getChannelId();
+    const key = process.env.YOUTUBE_API_KEY;
+    const url = `https://www.googleapis.com/youtube/v3/search?part=snippet&channelId=${channelId}&type=video&eventType=live&maxResults=1&key=${key}`;
+    const data = await (await fetch(url)).json();
+    if (data.items && data.items.length > 0) {
+      const v = data.items[0];
+      res.json({ live: true, url: `https://www.youtube.com/watch?v=${v.id.videoId}`, title: v.snippet.title });
+    } else {
+      res.json({ live: false });
+    }
+  } catch (e) {
+    res.json({ live: false });
+  }
+});
+
 app.get('/api/youtube/find', requireAuth, async (req, res) => {
   try {
     const { date } = req.query; // expects YYYY-MM-DD

@@ -138,6 +138,21 @@ async function loadData() {
   } catch (e) {
     console.error('Failed to load data:', e);
   }
+  checkLiveStream();
+}
+
+async function checkLiveStream() {
+  try {
+    const data = await fetch('/api/youtube/live').then(r => r.json());
+    const btn   = document.getElementById('watch-sundays-btn');
+    const label = document.getElementById('watch-sundays-label');
+    if (!btn || !label) return;
+    if (data.live && data.url) {
+      btn.href = data.url;
+      label.innerHTML = '<span class="live-dot"></span> Live Now';
+      btn.classList.add('s-yt-btn--live');
+    }
+  } catch (e) { /* fail silently */ }
 }
 
 async function saveEvents() {
