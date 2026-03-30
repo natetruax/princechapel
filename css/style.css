@@ -908,11 +908,9 @@
     margin-bottom: 0.4rem;
   }
 
-  /* Strip any inline color/background styles from editor content */
-  #about-sections-body * {
-    color: inherit !important;
-    background-color: transparent !important;
-  }
+  /* Strip inline color/background styles injected by pasted content */
+  #about-sections-body [style*="color"] { color: inherit !important; }
+  #about-sections-body [style*="background"] { background-color: transparent !important; }
 
   .about-modal-section p {
     font-size: 0.95rem;
