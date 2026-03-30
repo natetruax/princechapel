@@ -400,7 +400,8 @@ function renderAdminStaff() {
           ${s.photo ? `<img src="${s.photo}" class="photo-preview">` : ''}
           <div class="photo-upload-actions">
             <input type="file" accept="image/*" id="photo-file-${i}" style="display:none" onchange="uploadStaffPhoto(${i}, this)">
-            <button class="upload-photo-btn" onclick="document.getElementById('photo-file-${i}').click()">Upload Photo</button>
+            <button class="upload-photo-btn" onclick="document.getElementById('photo-file-${i}').click()">${s.photo ? 'Replace Photo' : 'Upload Photo'}</button>
+            ${s.photo ? `<button class="upload-photo-btn" style="background:#fee;border-color:#fcc;color:#c33;" onclick="removeStaffPhoto(${i})">Remove Photo</button>` : ''}
             <span class="upload-status" id="upload-status-${i}"></span>
           </div>
         </div>
@@ -441,6 +442,7 @@ async function uploadStaffPhoto(i, input) {
 
 function addStaffEntry() { store.staff.push({name:'New Member',initials:'NM',photo:'',role:'Title',bio:''}); renderAdminStaff(); }
 function removeStaff(i)  { store.staff.splice(i,1); renderAdminStaff(); }
+function removeStaffPhoto(i) { store.staff[i].photo = ''; renderAdminStaff(); }
 
 // ---- SERMONS ----
 const SERMONS_VISIBLE = 4;
