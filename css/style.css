@@ -634,6 +634,25 @@
     flex-shrink: 0;
   }
 
+  .gallery-album-tabs {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+    padding: 1rem 1.5rem 0.25rem;
+  }
+  .gallery-tab {
+    padding: 0.35rem 1rem;
+    border-radius: 20px;
+    border: 1.5px solid rgba(210,230,242,0.25);
+    background: transparent;
+    color: rgba(210,230,242,0.65);
+    font-size: 0.82rem;
+    cursor: pointer;
+    transition: background 0.15s, color 0.15s, border-color 0.15s;
+  }
+  .gallery-tab:hover { border-color: var(--gold); color: var(--gold); }
+  .gallery-tab.active { background: var(--gold); border-color: var(--gold); color: var(--navy); font-weight: 700; }
+
   .gallery-modal-body {
     flex: 1;
     overflow-y: auto;
@@ -1842,6 +1861,23 @@
   }
 
   .add-entry-btn:hover { border-color: var(--clay); background: rgba(196,149,106,0.06); }
+
+  .admin-sub-heading {
+    font-family: 'Playfair Display', serif;
+    font-size: 0.95rem;
+    color: var(--text-dark);
+    margin: 0 0 0.75rem;
+    padding-bottom: 0.4rem;
+    border-bottom: 1px solid var(--border);
+  }
+
+  .album-entry {
+    display: flex;
+    align-items: center;
+    gap: 0.6rem;
+    margin-bottom: 0.5rem;
+  }
+  .album-entry input { flex: 1; }
 
   /* Quill rich editor */
   .rich-editor .ql-toolbar { border-radius: 6px 6px 0 0; border-color: var(--border); background: #fafafa; }

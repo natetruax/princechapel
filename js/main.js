@@ -110,7 +110,8 @@ const store = {
     { title:'Walking in His Grace',    date:'March 16, 2025', speaker:'Rev. Dr. Smith', url:'' },
     { title:'The Power of Community',  date:'March 9, 2025',  speaker:'Rev. Dr. Smith', url:'' }
   ],
-  galleryPhotos: []
+  galleryPhotos: [],
+  galleryAlbums: []
 };
 
 // ---- DATA LOAD & SAVE ----
@@ -131,6 +132,7 @@ async function loadData() {
     }
     if (data.heroPhotos    && data.heroPhotos.length)    store.heroPhotos    = data.heroPhotos;
     if (data.galleryPhotos && data.galleryPhotos.length) store.galleryPhotos = data.galleryPhotos;
+    if (data.galleryAlbums && data.galleryAlbums.length) store.galleryAlbums = data.galleryAlbums;
     renderEvents();
     renderStaff();
     renderSermons();
@@ -774,27 +776,57 @@ function initAboutEditors() {
 }
 
 // ---- GALLERY ----
+let activeGalleryAlbum = 'All';
+
+function getFilteredGalleryPhotos() {
+  const photos = store.galleryPhotos.filter(p => p.url);
+  if (activeGalleryAlbum === 'All') return photos;
+  return photos.filter(p => p.album === activeGalleryAlbum);
+}
+
+function renderGalleryTabs() {
+  const tabsEl = document.getElementById('gallery-album-tabs');
+  if (!tabsEl) return;
+  const photos = store.galleryPhotos.filter(p => p.url);
+  const usedAlbums = store.galleryAlbums.filter(a => photos.some(p => p.album === a.name));
+  if (!usedAlbums.length) { tabsEl.style.display = 'none'; return; }
+  tabsEl.style.display = '';
+  const tabs = ['All', ...usedAlbums.map(a => a.name)];
+  tabsEl.innerHTML = tabs.map(t =>
+    `<button class="gallery-tab${t === activeGalleryAlbum ? ' active' : ''}" onclick="setGalleryAlbum('${t.replace(/'/g,"\\'")}')">` +
+    `${t === 'All' ? 'All Photos' : t}</button>`
+  ).join('');
+}
+
+function setGalleryAlbum(album) {
+  activeGalleryAlbum = album;
+  renderGalleryTabs();
+  renderGallery();
+}
+
 function renderGallery() {
   const grid  = document.getElementById('gallery-grid');
   const empty = document.getElementById('gallery-no-photos');
-  const photos = store.galleryPhotos.filter(p => p.url);
+  renderGalleryTabs();
+  const photos = getFilteredGalleryPhotos();
   if (!photos.length) { grid.innerHTML = ''; empty.style.display = ''; return; }
   empty.style.display = 'none';
   grid.innerHTML = photos.map((p, i) => `
-    <button class="gallery-thumb" onclick="openLightbox(${i})" style="background-image:url('${p.url}');background-size:cover;background-position:center;border:none;padding:0;">
+    <button class="gallery-thumb" onclick="openLightboxFiltered(${i})" style="background-image:url('${p.url}');background-size:cover;background-position:center;border:none;padding:0;">
       ${p.caption ? `<div class="gallery-thumb-caption">${p.caption}</div>` : ''}
     </button>`).join('');
 }
 
 function openGalleryModal() {
+  activeGalleryAlbum = 'All';
   renderGallery();
   document.getElementById('gallery-modal').style.display = 'flex';
 }
 function closeGalleryModal() { document.getElementById('gallery-modal').style.display = 'none'; }
 
 let lightboxIndex = 0;
-function openLightbox(i) {
-  const photos = store.galleryPhotos.filter(p => p.url);
+function openLightboxFiltered(i) {
+  const photos = getFilteredGalleryPhotos();
   lightboxIndex = i;
   document.getElementById('lightbox-img').src = photos[i].url;
   document.getElementById('lightbox-caption').textContent = photos[i].caption || '';
@@ -807,9 +839,9 @@ function closeLightbox() {
   document.getElementById('lightbox-img').src = '';
 }
 function lightboxNav(dir) {
-  const photos = store.galleryPhotos.filter(p => p.url);
+  const photos = getFilteredGalleryPhotos();
   const next = lightboxIndex + dir;
-  if (next >= 0 && next < photos.length) openLightbox(next);
+  if (next >= 0 && next < photos.length) openLightboxFiltered(next);
 }
 document.addEventListener('keydown', e => {
   if (document.getElementById('lightbox').style.display === 'flex') {
@@ -820,7 +852,36 @@ document.addEventListener('keydown', e => {
   if (document.getElementById('gallery-modal').style.display === 'flex' && e.key === 'Escape') closeGalleryModal();
 });
 
+function albumOptions(selected) {
+  const none = `<option value=""${!selected ? ' selected' : ''}>— No Album —</option>`;
+  return none + store.galleryAlbums.map(a =>
+    `<option value="${a.name}"${a.name === selected ? ' selected' : ''}>${a.name}</option>`
+  ).join('');
+}
+
+function renderAdminGalleryAlbums() {
+  document.getElementById('gallery-albums-list').innerHTML = store.galleryAlbums.length
+    ? store.galleryAlbums.map((a, i) => `
+      <div class="album-entry">
+        <input type="text" value="${a.name}" onchange="store.galleryAlbums[${i}].name=this.value;renderAdminGallery();" placeholder="Album name">
+        <button class="entry-remove" onclick="removeGalleryAlbum(${i})" style="position:static;font-size:0.75rem;padding:0.3rem 0.6rem;">Remove</button>
+      </div>`).join('')
+    : '<p style="color:var(--text-light);font-size:0.88rem;">No albums yet.</p>';
+}
+
+function addGalleryAlbum() {
+  store.galleryAlbums.push({ name: 'New Album', sort_order: store.galleryAlbums.length });
+  renderAdminGalleryAlbums();
+  renderAdminGallery();
+}
+function removeGalleryAlbum(i) {
+  store.galleryAlbums.splice(i, 1);
+  renderAdminGalleryAlbums();
+  renderAdminGallery();
+}
+
 function renderAdminGallery() {
+  renderAdminGalleryAlbums();
   document.getElementById('gallery-admin-list').innerHTML = store.galleryPhotos.length
     ? store.galleryPhotos.map((p, i) => `
       <div class="event-entry" style="display:flex;align-items:center;gap:1rem;flex-wrap:wrap;">
@@ -833,6 +894,7 @@ function renderAdminGallery() {
             <span class="upload-status" id="gallery-status-${i}"></span>
           </div>
           <input type="text" placeholder="Caption (optional)" value="${p.caption||''}" style="margin-top:0.5rem;width:100%;" onchange="store.galleryPhotos[${i}].caption=this.value">
+          <select style="margin-top:0.4rem;width:100%;" onchange="store.galleryPhotos[${i}].album=this.value">${albumOptions(p.album||'')}</select>
         </div>
       </div>`).join('')
     : '<p style="color:var(--text-light);font-size:0.88rem;">No photos yet. Click below to add one.</p>';
@@ -858,19 +920,26 @@ async function uploadGalleryPhoto(i, input) {
 }
 
 function addGalleryPhoto() {
-  store.galleryPhotos.push({ url: '', caption: '' });
+  store.galleryPhotos.push({ url: '', caption: '', album: '' });
   renderAdminGallery();
   setTimeout(() => document.getElementById(`gallery-file-${store.galleryPhotos.length - 1}`)?.click(), 100);
 }
 function removeGalleryPhoto(i) { store.galleryPhotos.splice(i, 1); renderAdminGallery(); }
 
 async function saveGallery() {
-  const res = await fetch('/api/save/gallery', {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ photos: store.galleryPhotos.filter(p => p.url) })
-  });
-  if (!res.ok) { alert('Save failed'); return; }
+  const [albumRes, photoRes] = await Promise.all([
+    fetch('/api/save/gallery-albums', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ albums: store.galleryAlbums })
+    }),
+    fetch('/api/save/gallery', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ photos: store.galleryPhotos.filter(p => p.url) })
+    })
+  ]);
+  if (!albumRes.ok || !photoRes.ok) { alert('Save failed'); return; }
   showToast();
 }
 

@@ -59,10 +59,32 @@ db.exec(`
     id         INTEGER PRIMARY KEY AUTOINCREMENT,
     url        TEXT,
     caption    TEXT,
+    album      TEXT DEFAULT '',
+    sort_order INTEGER DEFAULT 0
+  );
+
+  CREATE TABLE IF NOT EXISTS gallery_albums (
+    id         INTEGER PRIMARY KEY AUTOINCREMENT,
+    name       TEXT UNIQUE,
     sort_order INTEGER DEFAULT 0
   );
 `);
 
 db.prepare('INSERT OR IGNORE INTO about (id) VALUES (1)').run();
+
+// Live migrations
+try { db.exec(`ALTER TABLE gallery_photos ADD COLUMN album TEXT DEFAULT ''`); } catch(e) {}
+
+// Seed default albums
+const seedAlbums = [
+  'Sunday Service',
+  'Young Peoples Department',
+  'Community Events',
+  'Men of Prince',
+  'Womens Missionary Society',
+  'Lay Organization'
+];
+const insertAlbum = db.prepare('INSERT OR IGNORE INTO gallery_albums (name, sort_order) VALUES (?, ?)');
+seedAlbums.forEach((name, i) => insertAlbum.run(name, i));
 
 module.exports = db;

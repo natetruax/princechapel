@@ -121,6 +121,7 @@ app.get('/api/data', (req, res) => {
     const aboutRow = db.prepare('SELECT * FROM about WHERE id = 1').get();
     const heroPhotos = db.prepare('SELECT * FROM hero_photos ORDER BY sort_order').all();
     const galleryPhotos = db.prepare('SELECT * FROM gallery_photos ORDER BY sort_order').all();
+    const galleryAlbums = db.prepare('SELECT * FROM gallery_albums ORDER BY sort_order').all();
 
     res.json({
       events,
@@ -128,7 +129,8 @@ app.get('/api/data', (req, res) => {
       sermons,
       about: aboutRow || {},
       heroPhotos,
-      galleryPhotos
+      galleryPhotos,
+      galleryAlbums
     });
   } catch (e) {
     res.status(500).json({ error: e.message });
@@ -249,13 +251,28 @@ app.post('/api/save/gallery', requireAuth, (req, res) => {
   try {
     const { photos } = req.body;
     db.prepare('DELETE FROM gallery_photos').run();
-    const insert = db.prepare('INSERT INTO gallery_photos (url, caption, sort_order) VALUES (?, ?, ?)');
+    const insert = db.prepare('INSERT INTO gallery_photos (url, caption, album, sort_order) VALUES (?, ?, ?, ?)');
     const insertMany = db.transaction((rows) => {
       rows.forEach((p, i) => {
-        insert.run(p.url || '', p.caption || '', i);
+        insert.run(p.url || '', p.caption || '', p.album || '', i);
       });
     });
     insertMany(photos || []);
+    res.json({ ok: true });
+  } catch (e) {
+    res.status(500).json({ error: e.message });
+  }
+});
+
+app.post('/api/save/gallery-albums', requireAuth, (req, res) => {
+  try {
+    const { albums } = req.body;
+    db.prepare('DELETE FROM gallery_albums').run();
+    const insert = db.prepare('INSERT INTO gallery_albums (name, sort_order) VALUES (?, ?)');
+    const insertMany = db.transaction((rows) => {
+      rows.forEach((a, i) => { if (a.name) insert.run(a.name, i); });
+    });
+    insertMany(albums || []);
     res.json({ ok: true });
   } catch (e) {
     res.status(500).json({ error: e.message });

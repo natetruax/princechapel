@@ -363,7 +363,13 @@ La Jolla, CA</textarea>
 
       <!-- GALLERY TAB -->
       <div class="tab-pane" id="tab-gallery">
-        <p style="font-size:0.88rem;color:var(--text-light);margin-bottom:1.25rem;">Manage the photo gallery accessible from the navigation. Photos are stored in Supabase.</p>
+        <p style="font-size:0.88rem;color:var(--text-light);margin-bottom:1.25rem;">Manage the photo gallery. Assign photos to albums so visitors can browse by category.</p>
+
+        <h4 class="admin-sub-heading">Albums</h4>
+        <div id="gallery-albums-list"></div>
+        <button class="add-entry-btn" onclick="addGalleryAlbum()" style="margin-top:0.5rem;">+ Add Album</button>
+
+        <h4 class="admin-sub-heading" style="margin-top:1.5rem;">Photos</h4>
         <div id="gallery-admin-list"></div>
         <button class="add-entry-btn" onclick="addGalleryPhoto()">+ Add Photo</button>
         <br><br>
@@ -385,6 +391,7 @@ La Jolla, CA</textarea>
       <button class="staff-modal-close" onclick="closeGalleryModal()">&#x2715;</button>
     </div>
     <div class="gallery-modal-body">
+      <div id="gallery-album-tabs" class="gallery-album-tabs" style="display:none;"></div>
       <div class="gallery-grid" id="gallery-grid"></div>
       <p id="gallery-no-photos" style="text-align:center;color:rgba(210,230,242,0.4);padding:4rem 0;display:none;">No photos yet.</p>
     </div>
