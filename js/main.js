@@ -529,8 +529,42 @@ function renderAdminSermons() {
         <div class="form-group"><label>Speaker</label><input type="text" value="${s.speaker}" onchange="store.sermons[${i}].speaker=this.value"></div>
         <div class="form-group"><label>Scripture Reference</label><input type="text" value="${s.scripture||''}" onchange="store.sermons[${i}].scripture=this.value" placeholder="e.g. John 3:16"></div>
       </div>
-      <div class="form-group"><label>YouTube / Podcast URL</label><input type="url" value="${s.url}" onchange="store.sermons[${i}].url=this.value" placeholder="https://..."></div>
+      <div class="form-group">
+        <label>YouTube / Podcast URL</label>
+        <div style="display:flex;gap:0.5rem;align-items:center;">
+          <input type="url" id="sermon-url-${i}" value="${s.url}" onchange="store.sermons[${i}].url=this.value" placeholder="https://..." style="flex:1;">
+          <button type="button" class="btn-find-yt" onclick="findYouTubeVideo(${i})" title="Search YouTube for a video on this sermon's date">&#128269; Find on YouTube</button>
+        </div>
+        <div id="yt-status-${i}" style="font-size:0.78rem;margin-top:0.3rem;min-height:1.2em;color:var(--clay);"></div>
+      </div>
     </div>`).join('');
+}
+
+async function findYouTubeVideo(i) {
+  const sermon = store.sermons[i];
+  const date = toDateValue(sermon.date);
+  const statusEl = document.getElementById('yt-status-' + i);
+  const urlInput = document.getElementById('sermon-url-' + i);
+
+  if (!date) { statusEl.textContent = 'Set a date first.'; return; }
+
+  statusEl.textContent = 'Searching YouTube...';
+  try {
+    const res = await fetch('/api/youtube/find?date=' + date);
+    const data = await res.json();
+    if (data.url) {
+      store.sermons[i].url = data.url;
+      urlInput.value = data.url;
+      statusEl.style.color = 'var(--clay)';
+      statusEl.textContent = '\u2713 Found: ' + data.title;
+    } else {
+      statusEl.style.color = '#999';
+      statusEl.textContent = 'No video found for ' + date + '.';
+    }
+  } catch (e) {
+    statusEl.style.color = '#c00';
+    statusEl.textContent = 'Error: ' + e.message;
+  }
 }
 
 function addSermonEntry() { store.sermons.push({title:'New Sermon',date:'',speaker:'',url:''}); renderAdminSermons(); }

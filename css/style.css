@@ -535,6 +535,11 @@
     word-break: break-word;
   }
 
+  .event-info {
+    text-align: center;
+    flex: 1;
+  }
+
   .event-info h3 {
     font-family: 'Playfair Display', serif;
     font-size: 1.05rem;
@@ -1787,6 +1792,19 @@
   }
 
   .entry-remove:hover { background: #fee; border-color: #fcc; color: #c33; }
+
+  .btn-find-yt {
+    padding: 0.45rem 0.85rem;
+    font-size: 0.8rem;
+    background: transparent;
+    border: 1.5px solid var(--clay);
+    color: var(--clay);
+    border-radius: 6px;
+    cursor: pointer;
+    white-space: nowrap;
+    transition: background 0.15s, color 0.15s;
+  }
+  .btn-find-yt:hover { background: var(--clay); color: white; }
 
   .add-entry-btn {
     display: inline-flex;

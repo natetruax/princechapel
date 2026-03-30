@@ -271,6 +271,53 @@ app.post('/api/upload', requireAuth, upload.single('file'), (req, res) => {
   }
 });
 
+// ---- YOUTUBE LOOKUP ----
+const YOUTUBE_CHANNEL_HANDLE = 'princechapelbytheseaamechu4598';
+let cachedChannelId = null;
+
+async function getChannelId() {
+  if (cachedChannelId) return cachedChannelId;
+  const url = `https://www.googleapis.com/youtube/v3/channels?part=id&forHandle=${YOUTUBE_CHANNEL_HANDLE}&key=${process.env.YOUTUBE_API_KEY}`;
+  const res = await fetch(url);
+  const data = await res.json();
+  if (data.items && data.items.length > 0) {
+    cachedChannelId = data.items[0].id;
+    return cachedChannelId;
+  }
+  throw new Error('Channel not found');
+}
+
+app.get('/api/youtube/find', requireAuth, async (req, res) => {
+  try {
+    const { date } = req.query; // expects YYYY-MM-DD
+    if (!date) return res.status(400).json({ error: 'date required' });
+    if (!process.env.YOUTUBE_API_KEY) return res.status(500).json({ error: 'YOUTUBE_API_KEY not configured' });
+
+    const channelId = await getChannelId();
+
+    const after  = new Date(date + 'T00:00:00Z').toISOString();
+    const before = new Date(date + 'T23:59:59Z').toISOString();
+
+    const searchUrl = `https://www.googleapis.com/youtube/v3/search?part=snippet&channelId=${channelId}&type=video&publishedAfter=${after}&publishedBefore=${before}&order=date&maxResults=5&key=${process.env.YOUTUBE_API_KEY}`;
+    const searchRes = await fetch(searchUrl);
+    const searchData = await searchRes.json();
+
+    if (!searchData.items || searchData.items.length === 0) {
+      return res.json({ url: null, message: 'No videos found for this date' });
+    }
+
+    const video = searchData.items[0];
+    res.json({
+      url: `https://www.youtube.com/watch?v=${video.id.videoId}`,
+      title: video.snippet.title,
+      thumbnail: video.snippet.thumbnails.default.url
+    });
+  } catch (e) {
+    console.error('YouTube lookup error:', e);
+    res.status(500).json({ error: e.message });
+  }
+});
+
 // ---- START ----
 const PORT = process.env.PORT || 3000;
 app.listen(PORT, () => {
