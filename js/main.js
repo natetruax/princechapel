@@ -418,15 +418,40 @@ function renderAdminStaff() {
   });
 }
 
+// Compress an image file client-side before uploading.
+// maxDim: longest edge in px. quality: JPEG quality 0–1.
+function compressImage(file, maxDim = 1920, quality = 0.82) {
+  return new Promise((resolve) => {
+    const img = new Image();
+    const url = URL.createObjectURL(file);
+    img.onload = () => {
+      URL.revokeObjectURL(url);
+      let { width, height } = img;
+      if (width > maxDim || height > maxDim) {
+        if (width >= height) { height = Math.round(height * maxDim / width); width = maxDim; }
+        else                 { width  = Math.round(width  * maxDim / height); height = maxDim; }
+      }
+      const canvas = document.createElement('canvas');
+      canvas.width = width; canvas.height = height;
+      canvas.getContext('2d').drawImage(img, 0, 0, width, height);
+      canvas.toBlob(blob => resolve(blob || file), 'image/jpeg', quality);
+    };
+    img.onerror = () => { URL.revokeObjectURL(url); resolve(file); };
+    img.src = url;
+  });
+}
+
 async function uploadStaffPhoto(i, input) {
   const file = input.files[0];
   if (!file) return;
   const statusEl = document.getElementById('upload-status-' + i);
-  statusEl.textContent = 'Uploading…';
+  statusEl.textContent = 'Compressing…';
   statusEl.className = 'upload-status uploading';
   try {
+    const blob = await compressImage(file, 800, 0.85);
+    statusEl.textContent = 'Uploading…';
     const formData = new FormData();
-    formData.append('file', file);
+    formData.append('file', blob, file.name.replace(/\.[^.]+$/, '.jpg'));
     const res = await fetch('/api/upload', { method: 'POST', body: formData });
     if (!res.ok) throw new Error('Upload failed');
     const { url } = await res.json();
@@ -711,11 +736,13 @@ async function uploadHeroPhoto(i, input) {
   const file = input.files[0];
   if (!file) return;
   const statusEl = document.getElementById('hero-upload-status-' + i);
-  statusEl.textContent = 'Uploading…';
+  statusEl.textContent = 'Compressing…';
   statusEl.className = 'upload-status uploading';
   try {
+    const blob = await compressImage(file, 1920, 0.82);
+    statusEl.textContent = 'Uploading…';
     const formData = new FormData();
-    formData.append('file', file);
+    formData.append('file', blob, file.name.replace(/\.[^.]+$/, '.jpg'));
     const res = await fetch('/api/upload', { method: 'POST', body: formData });
     if (!res.ok) throw new Error('Upload failed');
     const { url } = await res.json();
@@ -906,10 +933,12 @@ async function uploadGalleryPhoto(i, input) {
   const file = input.files[0];
   if (!file) return;
   const statusEl = document.getElementById('gallery-status-' + i);
-  statusEl.textContent = 'Uploading…'; statusEl.className = 'upload-status uploading';
+  statusEl.textContent = 'Compressing…'; statusEl.className = 'upload-status uploading';
   try {
+    const blob = await compressImage(file, 1920, 0.82);
+    statusEl.textContent = 'Uploading…';
     const formData = new FormData();
-    formData.append('file', file);
+    formData.append('file', blob, file.name.replace(/\.[^.]+$/, '.jpg'));
     const res = await fetch('/api/upload', { method: 'POST', body: formData });
     if (!res.ok) throw new Error('Upload failed');
     const { url } = await res.json();
