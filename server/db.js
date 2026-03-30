@@ -68,12 +68,33 @@ db.exec(`
     name       TEXT UNIQUE,
     sort_order INTEGER DEFAULT 0
   );
+
+  CREATE TABLE IF NOT EXISTS about_sections (
+    id         INTEGER PRIMARY KEY AUTOINCREMENT,
+    title      TEXT,
+    content    TEXT DEFAULT '',
+    photo      TEXT DEFAULT '',
+    sort_order INTEGER DEFAULT 0
+  );
 `);
 
 db.prepare('INSERT OR IGNORE INTO about (id) VALUES (1)').run();
 
 // Live migrations
 try { db.exec(`ALTER TABLE gallery_photos ADD COLUMN album TEXT DEFAULT ''`); } catch(e) {}
+
+// Migrate existing about fields into about_sections if table is empty
+const sectionCount = db.prepare('SELECT COUNT(*) as n FROM about_sections').get();
+if (sectionCount.n === 0) {
+  const aboutRow = db.prepare('SELECT * FROM about WHERE id = 1').get() || {};
+  const ins = db.prepare('INSERT INTO about_sections (title, content, sort_order) VALUES (?, ?, ?)');
+  [
+    ['Our Name',            aboutRow.name    || ''],
+    ['Our Vision',          aboutRow.vision  || ''],
+    ['Our Mission Statement', aboutRow.mission || ''],
+    ['Our Motto',           aboutRow.motto   || ''],
+  ].forEach(([title, content], i) => ins.run(title, content, i));
+}
 
 // Seed default albums
 const seedAlbums = [

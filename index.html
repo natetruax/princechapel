@@ -332,23 +332,10 @@ La Jolla, CA</textarea>
 
       <!-- ABOUT TAB -->
       <div class="tab-pane" id="tab-about">
-        <p style="font-size:0.88rem;color:var(--text-light);margin-bottom:1.25rem;">Edit the content shown in the "Learn More" popup on the homepage.</p>
-        <div class="form-group">
-          <label>Our Name</label>
-          <div id="admin-about-name-editor" class="rich-editor"></div>
-        </div>
-        <div class="form-group">
-          <label>Our Vision</label>
-          <div id="admin-about-vision-editor" class="rich-editor"></div>
-        </div>
-        <div class="form-group">
-          <label>Our Mission Statement</label>
-          <div id="admin-about-mission-editor" class="rich-editor"></div>
-        </div>
-        <div class="form-group">
-          <label>Our Motto</label>
-          <div id="admin-about-motto-editor" class="rich-editor"></div>
-        </div>
+        <p style="font-size:0.88rem;color:var(--text-light);margin-bottom:1.25rem;">Edit the sections shown in the "Who We Are" popup. Add a photo to any section to display it alongside the text.</p>
+        <div id="about-sections-admin-list"></div>
+        <button class="add-entry-btn" onclick="addAboutSection()">+ Add Section</button>
+        <br><br>
         <button class="admin-save-btn" onclick="saveAbout()">Save About</button>
       </div>
 
@@ -561,22 +548,7 @@ La Jolla, CA</textarea>
       <h2 class="about-modal-title">Who We Are</h2>
     </div>
     <div class="about-modal-body">
-      <div class="about-modal-section">
-        <h3>Our Name</h3>
-        <p id="about-name">Prince Chapel African Methodist Episcopal Church by the Sea — a congregation rooted in over 100 years of faith, service, and community in La Jolla, California.</p>
-      </div>
-      <div class="about-modal-section">
-        <h3>Our Vision</h3>
-        <p id="about-vision">Edit this in the admin panel.</p>
-      </div>
-      <div class="about-modal-section">
-        <h3>Our Mission Statement</h3>
-        <p id="about-mission">Edit this in the admin panel.</p>
-      </div>
-      <div class="about-modal-section">
-        <h3>Our Motto</h3>
-        <p id="about-motto">Edit this in the admin panel.</p>
-      </div>
+      <div id="about-sections-body"></div>
     </div>
   </div>
 </div>

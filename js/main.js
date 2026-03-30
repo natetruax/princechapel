@@ -82,6 +82,7 @@ document.getElementById('footer-brand-tap').addEventListener('click', () => {
 // ---- DATA STORE (default sample data — replaced by API once loaded) ----
 const store = {
   heroPhotos: [],
+  aboutSections: [],
   calendarUrl: '',
   about: {
     name:         'Prince Chapel African Methodist Episcopal Church by the Sea — a congregation rooted in over 100 years of faith, service, and community in La Jolla, California.',
@@ -133,6 +134,7 @@ async function loadData() {
     if (data.heroPhotos    && data.heroPhotos.length)    store.heroPhotos    = data.heroPhotos;
     if (data.galleryPhotos && data.galleryPhotos.length) store.galleryPhotos = data.galleryPhotos;
     if (data.galleryAlbums && data.galleryAlbums.length) store.galleryAlbums = data.galleryAlbums;
+    if (data.aboutSections) store.aboutSections = data.aboutSections;
     renderEvents();
     renderStaff();
     renderSermons();
@@ -621,26 +623,88 @@ async function findYouTubeVideo(i) {
 function addSermonEntry() { store.sermons.push({title:'New Sermon',date:'',speaker:'',url:''}); renderAdminSermons(); }
 function removeSermon(i)  { store.sermons.splice(i,1); renderAdminSermons(); }
 
-// ---- ABOUT ----
+// ---- ABOUT SECTIONS ----
+let aboutSectionEditors = [];
+
 function renderAdminAbout() {
-  if (!quillAboutName) initAboutEditors();
-  quillAboutName.root.innerHTML    = store.about.name    || '';
-  quillAboutVision.root.innerHTML  = store.about.vision  || '';
-  quillAboutMission.root.innerHTML = store.about.mission || '';
-  quillAboutMotto.root.innerHTML   = store.about.motto   || '';
+  const list = document.getElementById('about-sections-admin-list');
+  aboutSectionEditors = [];
+  list.innerHTML = store.aboutSections.map((s, i) => `
+    <div class="event-entry">
+      <button class="entry-remove" onclick="removeAboutSection(${i})">Remove</button>
+      <div class="form-group">
+        <label>Section Title</label>
+        <input type="text" value="${s.title || ''}" onchange="store.aboutSections[${i}].title=this.value" placeholder="e.g. Our Vision">
+      </div>
+      <div class="form-group">
+        <label>Content</label>
+        <div id="about-section-editor-${i}" class="rich-editor"></div>
+      </div>
+      <div class="form-group">
+        <label>Photo (optional)</label>
+        <div class="photo-upload-row">
+          ${s.photo ? `<img src="${s.photo}" style="width:120px;height:80px;object-fit:cover;border-radius:6px;flex-shrink:0;">` : ''}
+          <div class="photo-upload-actions">
+            <input type="file" accept="image/*" id="about-section-file-${i}" style="display:none" onchange="uploadAboutSectionPhoto(${i}, this)">
+            <button class="upload-photo-btn" onclick="document.getElementById('about-section-file-${i}').click()">${s.photo ? 'Replace Photo' : 'Add Photo'}</button>
+            ${s.photo ? `<button class="upload-photo-btn" style="background:#fee;border-color:#fcc;color:#c33;" onclick="removeAboutSectionPhoto(${i})">Remove Photo</button>` : ''}
+            <span class="upload-status" id="about-section-status-${i}"></span>
+          </div>
+        </div>
+      </div>
+    </div>`).join('');
+
+  store.aboutSections.forEach((s, i) => {
+    const editor = new Quill(`#about-section-editor-${i}`, { theme: 'snow', formats: richFormats, modules: { toolbar: richToolbar } });
+    editor.root.innerHTML = s.content || '';
+    aboutSectionEditors.push(editor);
+  });
+}
+
+function addAboutSection() {
+  store.aboutSections.push({ title: 'New Section', content: '', photo: '' });
+  renderAdminAbout();
+}
+
+function removeAboutSection(i) {
+  store.aboutSections.splice(i, 1);
+  renderAdminAbout();
+}
+
+function removeAboutSectionPhoto(i) {
+  store.aboutSections[i].photo = '';
+  renderAdminAbout();
+}
+
+async function uploadAboutSectionPhoto(i, input) {
+  const file = input.files[0];
+  if (!file) return;
+  const statusEl = document.getElementById('about-section-status-' + i);
+  statusEl.textContent = 'Compressing…'; statusEl.className = 'upload-status uploading';
+  try {
+    const blob = await compressImage(file, 1200, 0.85);
+    statusEl.textContent = 'Uploading…';
+    const formData = new FormData();
+    formData.append('file', blob, file.name.replace(/\.[^.]+$/, '.jpg'));
+    const res = await fetch('/api/upload', { method: 'POST', body: formData });
+    if (!res.ok) throw new Error('Upload failed');
+    const { url } = await res.json();
+    store.aboutSections[i].photo = url;
+    statusEl.textContent = 'Uploaded!'; statusEl.className = 'upload-status success';
+    renderAdminAbout();
+  } catch (e) {
+    statusEl.textContent = 'Failed: ' + e.message; statusEl.className = 'upload-status error';
+  }
 }
 
 async function saveAbout() {
-  if (quillAboutName) {
-    store.about.name    = quillAboutName.root.innerHTML;
-    store.about.vision  = quillAboutVision.root.innerHTML;
-    store.about.mission = quillAboutMission.root.innerHTML;
-    store.about.motto   = quillAboutMotto.root.innerHTML;
-  }
-  const res = await fetch('/api/save/about', {
+  aboutSectionEditors.forEach((editor, i) => {
+    if (store.aboutSections[i]) store.aboutSections[i].content = editor.root.innerHTML;
+  });
+  const res = await fetch('/api/save/about-sections', {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify(store.about)
+    body: JSON.stringify({ sections: store.aboutSections })
   });
   res.ok ? showToast() : alert('Save failed');
 }
@@ -657,10 +721,15 @@ function closeHistoryModal() {
 
 // ---- ABOUT MODAL ----
 function openAboutModal() {
-  document.getElementById('about-name').innerHTML    = store.about.name;
-  document.getElementById('about-vision').innerHTML  = store.about.vision;
-  document.getElementById('about-mission').innerHTML = store.about.mission;
-  document.getElementById('about-motto').innerHTML   = store.about.motto;
+  const body = document.getElementById('about-sections-body');
+  body.innerHTML = store.aboutSections.map(s => `
+    <div class="about-modal-section${s.photo ? ' has-photo' : ''}">
+      ${s.photo ? `<img class="about-section-photo" src="${s.photo}" alt="${s.title}">` : ''}
+      <div class="about-section-text">
+        <h3>${s.title}</h3>
+        <div>${s.content}</div>
+      </div>
+    </div>`).join('');
   document.getElementById('about-modal').style.display = 'flex';
   document.body.style.overflow = 'hidden';
 }
@@ -802,14 +871,6 @@ document.getElementById('login-modal').addEventListener('click', function(e) { i
 // ---- RICH TEXT EDITORS ----
 const richToolbar = [['bold', 'italic', 'underline'], [{ list: 'ordered' }, { list: 'bullet' }], ['clean']];
 const richFormats = ['bold', 'italic', 'underline', 'list'];
-let quillAboutName, quillAboutVision, quillAboutMission, quillAboutMotto;
-
-function initAboutEditors() {
-  quillAboutName    = new Quill('#admin-about-name-editor',    { theme: 'snow', formats: richFormats, modules: { toolbar: richToolbar } });
-  quillAboutVision  = new Quill('#admin-about-vision-editor',  { theme: 'snow', formats: richFormats, modules: { toolbar: richToolbar } });
-  quillAboutMission = new Quill('#admin-about-mission-editor', { theme: 'snow', formats: richFormats, modules: { toolbar: richToolbar } });
-  quillAboutMotto   = new Quill('#admin-about-motto-editor',   { theme: 'snow', formats: richFormats, modules: { toolbar: richToolbar } });
-}
 
 // ---- GALLERY ----
 let activeGalleryAlbum = 'All';

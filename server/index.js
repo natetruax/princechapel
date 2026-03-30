@@ -121,7 +121,8 @@ app.get('/api/data', (req, res) => {
     const aboutRow = db.prepare('SELECT * FROM about WHERE id = 1').get();
     const heroPhotos = db.prepare('SELECT * FROM hero_photos ORDER BY sort_order').all();
     const galleryPhotos = db.prepare('SELECT * FROM gallery_photos ORDER BY sort_order').all();
-    const galleryAlbums = db.prepare('SELECT * FROM gallery_albums ORDER BY sort_order').all();
+    const galleryAlbums   = db.prepare('SELECT * FROM gallery_albums ORDER BY sort_order').all();
+    const aboutSections   = db.prepare('SELECT * FROM about_sections ORDER BY sort_order').all();
 
     res.json({
       events,
@@ -130,7 +131,8 @@ app.get('/api/data', (req, res) => {
       about: aboutRow || {},
       heroPhotos,
       galleryPhotos,
-      galleryAlbums
+      galleryAlbums,
+      aboutSections
     });
   } catch (e) {
     res.status(500).json({ error: e.message });
@@ -258,6 +260,21 @@ app.post('/api/save/gallery', requireAuth, (req, res) => {
       });
     });
     insertMany(photos || []);
+    res.json({ ok: true });
+  } catch (e) {
+    res.status(500).json({ error: e.message });
+  }
+});
+
+app.post('/api/save/about-sections', requireAuth, (req, res) => {
+  try {
+    const { sections } = req.body;
+    db.prepare('DELETE FROM about_sections').run();
+    const insert = db.prepare('INSERT INTO about_sections (title, content, photo, sort_order) VALUES (?, ?, ?, ?)');
+    const insertMany = db.transaction((rows) => {
+      rows.forEach((s, i) => insert.run(s.title || '', s.content || '', s.photo || '', i));
+    });
+    insertMany(sections || []);
     res.json({ ok: true });
   } catch (e) {
     res.status(500).json({ error: e.message });

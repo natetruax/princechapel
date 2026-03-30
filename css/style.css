@@ -888,6 +888,22 @@
     margin-bottom: 1.5rem;
   }
 
+  .about-modal-section.has-photo {
+    display: flex;
+    gap: 1.5rem;
+    align-items: flex-start;
+  }
+
+  .about-section-photo {
+    width: 160px;
+    height: 160px;
+    object-fit: cover;
+    border-radius: 8px;
+    flex-shrink: 0;
+  }
+
+  .about-section-text { flex: 1; }
+
   .about-modal-section:last-child { margin-bottom: 0; }
 
   .about-modal-section h3 {
