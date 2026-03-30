@@ -1681,7 +1681,7 @@
     background: var(--warm-white);
     border-radius: 12px;
     width: 100%;
-    max-width: 780px;
+    max-width: 960px;
     max-height: 90vh;
     overflow-y: auto;
     box-shadow: 0 24px 80px rgba(0,0,0,0.4);
@@ -1742,10 +1742,10 @@
   .admin-tabs::-webkit-scrollbar { display: none; }
 
   .admin-tab {
-    padding: 1rem 1.2rem;
-    font-size: 0.82rem;
+    padding: 1rem 0.9rem;
+    font-size: 0.75rem;
     font-weight: 700;
-    letter-spacing: 0.06em;
+    letter-spacing: 0.05em;
     text-transform: uppercase;
     color: var(--text-light);
     border-bottom: 2.5px solid transparent;
