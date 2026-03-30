@@ -50,7 +50,7 @@ function requireAuth(req, res, next) {
 const oauthClient = new OAuth2Client(
   process.env.GOOGLE_CLIENT_ID,
   process.env.GOOGLE_CLIENT_SECRET,
-  'https://church.itbynate.com/api/auth/callback'
+  'https://princechapelame.org/api/auth/callback'
 );
 
 app.get('/api/auth/google', (req, res) => {
