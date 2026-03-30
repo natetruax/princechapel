@@ -10,12 +10,9 @@ const db = require('./db');
 
 const app = express();
 
-const ADMIN_EMAILS = [
-  'natetruax20@gmail.com',
-  'melanie.lanae@gmail.com',
-  'alicia.sims621@gmail.com',
-  'nazarethgurl94@gmail.com'
-];
+function getAdminEmails() {
+  return db.prepare('SELECT email FROM admins').all().map(r => r.email);
+}
 
 // ---- UPLOADS DIR ----
 const UPLOADS_DIR = '/var/www/princechapel/uploads';
@@ -77,7 +74,7 @@ app.get('/api/auth/callback', async (req, res) => {
     const email = payload.email;
     const name = payload.name;
 
-    if (!ADMIN_EMAILS.includes(email)) {
+    if (!getAdminEmails().includes(email)) {
       return res.redirect('/?login_error=unauthorized');
     }
 
@@ -261,6 +258,34 @@ app.post('/api/save/gallery', requireAuth, (req, res) => {
     });
     insertMany(photos || []);
     res.json({ ok: true });
+  } catch (e) {
+    res.status(500).json({ error: e.message });
+  }
+});
+
+app.get('/api/admins', requireAuth, (req, res) => {
+  res.json({ admins: getAdminEmails() });
+});
+
+app.post('/api/admins/add', requireAuth, (req, res) => {
+  try {
+    const { email } = req.body;
+    if (!email || !email.includes('@')) return res.status(400).json({ error: 'Invalid email' });
+    db.prepare('INSERT OR IGNORE INTO admins (email) VALUES (?)').run(email.trim().toLowerCase());
+    res.json({ ok: true, admins: getAdminEmails() });
+  } catch (e) {
+    res.status(500).json({ error: e.message });
+  }
+});
+
+app.post('/api/admins/remove', requireAuth, (req, res) => {
+  try {
+    const { email } = req.body;
+    const remaining = getAdminEmails().filter(e => e !== email);
+    if (remaining.length === 0) return res.status(400).json({ error: 'Cannot remove the last admin' });
+    if (email === req.user.email) return res.status(400).json({ error: 'Cannot remove yourself' });
+    db.prepare('DELETE FROM admins WHERE email = ?').run(email);
+    res.json({ ok: true, admins: getAdminEmails() });
   } catch (e) {
     res.status(500).json({ error: e.message });
   }

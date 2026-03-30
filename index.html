@@ -258,6 +258,7 @@
       <div class="admin-tab" onclick="switchTab('about')">About</div>
       <div class="admin-tab" onclick="switchTab('photos')">Photos</div>
       <div class="admin-tab" onclick="switchTab('gallery')">Gallery</div>
+      <div class="admin-tab" onclick="switchTab('admins')">Admins</div>
     </div>
     <div class="admin-body">
 
@@ -361,6 +362,18 @@ La Jolla, CA</textarea>
         <button class="add-entry-btn" onclick="addGalleryPhoto()">+ Add Photo</button>
         <br><br>
         <button class="admin-save-btn" onclick="saveGallery()">Save Gallery</button>
+      </div>
+
+      <!-- ADMINS TAB -->
+      <div class="tab-pane" id="tab-admins">
+        <p style="font-size:0.88rem;color:var(--text-light);margin-bottom:1.25rem;">Manage who has access to this admin panel. You cannot remove yourself or the last remaining admin.</p>
+        <h4 class="admin-sub-heading">Current Admins</h4>
+        <div id="admins-list"></div>
+        <h4 class="admin-sub-heading" style="margin-top:1.5rem;">Add Admin</h4>
+        <div style="display:flex;gap:0.5rem;align-items:center;">
+          <input type="email" id="new-admin-email" placeholder="email@example.com" style="flex:1;">
+          <button class="add-entry-btn" onclick="addAdmin()" style="margin:0;">+ Add</button>
+        </div>
       </div>
 
     </div>

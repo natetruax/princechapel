@@ -216,6 +216,7 @@ function openAdmin() {
   renderAdminAbout();
   renderAdminHeroPhotos();
   renderAdminGallery();
+  loadAdmins();
 }
 
 function closeAdmin() {
@@ -1038,6 +1039,50 @@ async function saveGallery() {
   ]);
   if (!albumRes.ok || !photoRes.ok) { alert('Save failed'); return; }
   showToast();
+}
+
+// ---- ADMIN MANAGEMENT ----
+async function loadAdmins() {
+  const res = await fetch('/api/admins');
+  if (!res.ok) return;
+  const { admins } = await res.json();
+  renderAdminList(admins);
+}
+
+function renderAdminList(admins) {
+  const list = document.getElementById('admins-list');
+  if (!list) return;
+  list.innerHTML = admins.map(email => `
+    <div class="album-entry">
+      <span style="flex:1;font-size:0.9rem;">${email}</span>
+      <button class="entry-remove" onclick="removeAdmin('${email}')" style="position:static;font-size:0.75rem;padding:0.3rem 0.6rem;">Remove</button>
+    </div>`).join('');
+}
+
+async function addAdmin() {
+  const input = document.getElementById('new-admin-email');
+  const email = input.value.trim().toLowerCase();
+  if (!email) return;
+  const res = await fetch('/api/admins/add', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ email })
+  });
+  const data = await res.json();
+  if (!res.ok) { alert(data.error); return; }
+  input.value = '';
+  renderAdminList(data.admins);
+}
+
+async function removeAdmin(email) {
+  const res = await fetch('/api/admins/remove', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ email })
+  });
+  const data = await res.json();
+  if (!res.ok) { alert(data.error); return; }
+  renderAdminList(data.admins);
 }
 
 // Init

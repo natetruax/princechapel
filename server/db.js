@@ -76,6 +76,11 @@ db.exec(`
     photo      TEXT DEFAULT '',
     sort_order INTEGER DEFAULT 0
   );
+
+  CREATE TABLE IF NOT EXISTS admins (
+    id    INTEGER PRIMARY KEY AUTOINCREMENT,
+    email TEXT UNIQUE NOT NULL
+  );
 `);
 
 db.prepare('INSERT OR IGNORE INTO about (id) VALUES (1)').run();
@@ -94,6 +99,13 @@ if (sectionCount.n === 0) {
     ['Our Mission Statement', aboutRow.mission || ''],
     ['Our Motto',           aboutRow.motto   || ''],
   ].forEach(([title, content], i) => ins.run(title, content, i));
+}
+
+// Seed admins from ADMIN_EMAILS env var (comma-separated) if table is empty
+const adminCount = db.prepare('SELECT COUNT(*) as n FROM admins').get();
+if (adminCount.n === 0 && process.env.ADMIN_EMAILS) {
+  const insertAdmin = db.prepare('INSERT OR IGNORE INTO admins (email) VALUES (?)');
+  process.env.ADMIN_EMAILS.split(',').map(e => e.trim()).filter(Boolean).forEach(e => insertAdmin.run(e));
 }
 
 // Seed default albums
