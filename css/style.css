@@ -912,7 +912,8 @@
   #about-sections-body [style*="color"] { color: inherit !important; }
   #about-sections-body [style*="background"] { background-color: transparent !important; }
 
-  .about-modal-section p {
+  .about-modal-section p,
+  .about-modal-section blockquote {
     font-size: 0.95rem;
     color: rgba(180,220,240,0.8);
     line-height: 1.7;
