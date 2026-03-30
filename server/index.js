@@ -294,24 +294,52 @@ app.get('/api/youtube/find', requireAuth, async (req, res) => {
     if (!process.env.YOUTUBE_API_KEY) return res.status(500).json({ error: 'YOUTUBE_API_KEY not configured' });
 
     const channelId = await getChannelId();
+    const key = process.env.YOUTUBE_API_KEY;
 
-    const after  = new Date(date + 'T00:00:00Z').toISOString();
-    const before = new Date(date + 'T23:59:59Z').toISOString();
+    // Search with a ±4 day window — for live streams, publishedAt is when the
+    // broadcast was scheduled/created, which may be days before the actual stream.
+    const center = new Date(date + 'T12:00:00Z');
+    const after  = new Date(center.getTime() - 4 * 24 * 60 * 60 * 1000).toISOString();
+    const before = new Date(center.getTime() + 4 * 24 * 60 * 60 * 1000).toISOString();
 
-    const searchUrl = `https://www.googleapis.com/youtube/v3/search?part=snippet&channelId=${channelId}&type=video&publishedAfter=${after}&publishedBefore=${before}&order=date&maxResults=5&key=${process.env.YOUTUBE_API_KEY}`;
+    const searchUrl = `https://www.googleapis.com/youtube/v3/search?part=snippet&channelId=${channelId}&type=video&publishedAfter=${after}&publishedBefore=${before}&order=date&maxResults=10&key=${key}`;
     const searchRes = await fetch(searchUrl);
     const searchData = await searchRes.json();
 
     if (!searchData.items || searchData.items.length === 0) {
-      return res.json({ url: null, message: 'No videos found for this date' });
+      return res.json({ url: null, message: 'No videos found near this date' });
     }
 
-    const video = searchData.items[0];
-    res.json({
-      url: `https://www.youtube.com/watch?v=${video.id.videoId}`,
-      title: video.snippet.title,
-      thumbnail: video.snippet.thumbnails.default.url
-    });
+    // Fetch liveStreamingDetails to get the actual broadcast start time
+    const videoIds = searchData.items.map(item => item.id.videoId).join(',');
+    const detailsUrl = `https://www.googleapis.com/youtube/v3/videos?part=snippet,liveStreamingDetails&id=${videoIds}&key=${key}`;
+    const detailsRes = await fetch(detailsUrl);
+    const detailsData = await detailsRes.json();
+
+    // Match by actualStartTime (real broadcast date) first, then fall back to publishedAt
+    let bestMatch = null;
+    for (const video of (detailsData.items || [])) {
+      const actualStart = video.liveStreamingDetails?.actualStartTime;
+      const publishedAt = video.snippet?.publishedAt;
+      const actualDate   = actualStart  ? actualStart.slice(0, 10)  : null;
+      const publishedDate = publishedAt ? publishedAt.slice(0, 10) : null;
+
+      if (actualDate === date) { bestMatch = video; break; }
+      if (publishedDate === date && !bestMatch) bestMatch = video;
+    }
+
+    // If still no exact match, return the closest result
+    if (!bestMatch && detailsData.items?.length > 0) bestMatch = detailsData.items[0];
+
+    if (bestMatch) {
+      res.json({
+        url: `https://www.youtube.com/watch?v=${bestMatch.id}`,
+        title: bestMatch.snippet.title,
+        thumbnail: bestMatch.snippet.thumbnails?.default?.url
+      });
+    } else {
+      res.json({ url: null, message: 'No video found for ' + date });
+    }
   } catch (e) {
     console.error('YouTube lookup error:', e);
     res.status(500).json({ error: e.message });
