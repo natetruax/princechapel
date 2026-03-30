@@ -241,7 +241,14 @@ function applyContactToPage() {
   if (a.service_time) document.getElementById('display-service-2-time').textContent = a.service_time;
   if (a.address)      document.getElementById('display-address').innerHTML = a.address.replace(/\n/g,'<br>');
   if (a.phone)        { document.getElementById('display-phone').textContent = a.phone; document.getElementById('display-phone').href = 'tel:'+a.phone; }
-  if (a.email)        { document.getElementById('display-email').textContent = a.email; document.getElementById('display-email').href = 'mailto:'+a.email; }
+  const emailRow = document.getElementById('contact-email-row');
+  if (a.email) {
+    document.getElementById('display-email').textContent = a.email;
+    document.getElementById('display-email').href = 'mailto:' + a.email;
+    emailRow.style.display = '';
+  } else {
+    emailRow.style.display = 'none';
+  }
   if (a.office_hours) document.getElementById('display-office-hours').textContent = a.office_hours;
 }
 
