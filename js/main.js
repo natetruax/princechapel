@@ -723,12 +723,10 @@ function closeHistoryModal() {
 function openAboutModal() {
   const body = document.getElementById('about-sections-body');
   body.innerHTML = store.aboutSections.map(s => `
-    <div class="about-modal-section${s.photo ? ' has-photo' : ''}">
+    <div class="about-modal-section">
+      <h3>${s.title}</h3>
       ${s.photo ? `<img class="about-section-photo" src="${s.photo}" alt="${s.title}">` : ''}
-      <div class="about-section-text">
-        <h3>${s.title}</h3>
-        <div>${s.content}</div>
-      </div>
+      <div>${s.content}</div>
     </div>`).join('');
   document.getElementById('about-modal').style.display = 'flex';
   document.body.style.overflow = 'hidden';
